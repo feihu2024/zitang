@@ -1,0 +1,219 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "植萃生活",
+        "enablePullDownRefresh": true,
+        "backgroundColor": "#f7f8f6",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/group/index",
+      "style": {
+        "navigationBarTitleText": "拼团活动",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/group-detail/index",
+      "style": {
+        "navigationBarTitleText": "拼团详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/product-detail/index",
+      "style": {
+        "navigationBarTitleText": "商品详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/order-confirm/index",
+      "style": {
+        "navigationBarTitleText": "确认订单",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/order-pay/index",
+      "style": {
+        "navigationBarTitleText": "订单支付",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/orders/index",
+      "style": {
+        "navigationBarTitleText": "我的订单",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/order-detail/index",
+      "style": {
+        "navigationBarTitleText": "订单详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/logistics/index",
+      "style": {
+        "navigationBarTitleText": "查看物流",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/group-records/index",
+      "style": {
+        "navigationBarTitleText": "拼团记录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/flash/index",
+      "style": {
+        "navigationBarTitleText": "限时秒杀",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/flash-detail/index",
+      "style": {
+        "navigationBarTitleText": "秒杀详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/flash-records/index",
+      "style": {
+        "navigationBarTitleText": "秒杀记录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/lottery/index",
+      "style": {
+        "navigationBarTitleText": "幸运抽奖",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/lottery-records/index",
+      "style": {
+        "navigationBarTitleText": "中奖记录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/activity/index",
+      "style": {
+        "navigationBarTitleText": "活动中心",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/promo/index",
+      "style": {
+        "navigationBarTitleText": "推广素材",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/promo-detail/index",
+      "style": {
+        "navigationBarTitleText": "推广素材详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "个人中心",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/referrals/index",
+      "style": {
+        "navigationBarTitleText": "我的推荐",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/balance-records/index",
+      "style": {
+        "navigationBarTitleText": "资金明细",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/candy-records/index",
+      "style": {
+        "navigationBarTitleText": "糖豆明细",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/team-incentive/index",
+      "style": {
+        "navigationBarTitleText": "我的业绩",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/point-records/index",
+      "style": {
+        "navigationBarTitleText": "积分明细",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/points-transfer/index",
+      "style": {
+        "navigationBarTitleText": "积分互转",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/address-list/index",
+      "style": {
+        "navigationBarTitleText": "地址列表",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/address-add/index",
+      "style": {
+        "navigationBarTitleText": "新增地址",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/share-poster/index",
+      "style": {
+        "navigationBarTitleText": "分享海报",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "植萃生活",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#f7f8f6",
+    "navigationStyle": "custom"
+  }
+}
