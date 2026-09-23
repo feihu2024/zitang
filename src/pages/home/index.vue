@@ -7,17 +7,9 @@
     </view>
     <view class="home-shell">
       <!-- 顶部 Banner 轮播 -->
-      <swiper
-        v-if="banners.length > 0"
-        class="hero-swiper"
-        :indicator-dots="banners.length > 1"
-        :autoplay="banners.length > 1"
-        :circular="banners.length > 1"
-        interval="4000"
-        duration="500"
-        indicator-active-color="#20b768"
-        indicator-color="rgba(255,255,255,0.5)"
-      >
+      <swiper v-if="banners.length > 0" class="hero-swiper" :indicator-dots="banners.length > 1"
+        :autoplay="banners.length > 1" :circular="banners.length > 1" interval="4000" duration="500"
+        indicator-active-color="#20b768" indicator-color="rgba(255,255,255,0.5)">
         <swiper-item v-for="(banner, idx) in banners" :key="banner.id" @tap="onBannerTap(banner)">
           <image class="hero-image" :src="banner.imageUrl" mode="aspectFill" />
         </swiper-item>
@@ -44,7 +36,7 @@
           <text class="quick-title">产品介绍</text>
           <text class="quick-desc">了解产品卖点</text>
         </view>
-        <view class="quick-item" @tap="showComing">
+        <view class="quick-item" @tap="goPromo">
           <image class="quick-icon" src="/static/quick-image.png" mode="aspectFit" />
           <text class="quick-title">推广素材</text>
           <text class="quick-desc">海量图文下载</text>
@@ -55,19 +47,14 @@
       <view class="search-row card">
         <view class="search-box">
           <view class="search-icon"></view>
-          <input
-            class="search-input"
-            placeholder="搜索商品名称 / 品牌 / 功效"
-            confirm-type="search"
-            :value="searchValue"
-            @confirm="onSearch"
-          />
+          <input class="search-input" placeholder="搜索商品名称 / 品牌 / 功效" confirm-type="search" :value="searchValue"
+            @confirm="onSearch" />
           <view class="search-submit" @tap="onSearch">搜索</view>
         </view>
       </view>
 
       <!-- 商城页 Banner 轮播（后台「商城页Banner」配置，展示在商品区上方） -->
-      <swiper
+      <!-- <swiper
         v-if="mallBanners.length > 0"
         class="mall-swiper"
         :indicator-dots="mallBanners.length > 1"
@@ -81,18 +68,13 @@
         <swiper-item v-for="(banner, idx) in mallBanners" :key="banner.id" @tap="onBannerTap(banner)">
           <image class="mall-swiper-image" :src="banner.imageUrl" mode="aspectFill" />
         </swiper-item>
-      </swiper>
+      </swiper> -->
 
       <!-- 分类横向滚动 -->
       <scroll-view class="category-scroll card" scroll-x show-scrollbar="false">
         <view class="category-list">
-          <view
-            v-for="(cat, idx) in categories"
-            :key="idx"
-            class="category-item"
-            :class="{ active: currentCategory === idx }"
-            @tap="chooseCategory(idx)"
-          >
+          <view v-for="(cat, idx) in categories" :key="idx" class="category-item"
+            :class="{ active: currentCategory === idx }" @tap="chooseCategory(idx)">
             <view class="category-art">
               <text>{{ cat.icon }}</text>
             </view>
@@ -166,13 +148,9 @@
             <view v-for="(spec, si) in buySpecs" :key="si" class="buy-spec-group">
               <text class="buy-spec-name">{{ spec.name }}</text>
               <view class="buy-spec-options">
-                <text
-                  v-for="(val, vi) in spec.values"
-                  :key="vi"
-                  class="buy-spec-option"
+                <text v-for="(val, vi) in spec.values" :key="vi" class="buy-spec-option"
                   :class="{ active: buySelected[spec.name] === val, disabled: specStockEmpty(spec.name, val) }"
-                  @tap="selectBuySpec(spec.name, val)"
-                >{{ val }}</text>
+                  @tap="selectBuySpec(spec.name, val)">{{ val }}</text>
               </view>
             </view>
           </view>
@@ -191,14 +169,13 @@
 
         <!-- 底部购买按钮（实时合计） -->
         <view class="buy-submit" :class="{ disabled: !buySku || buyStock <= 0 }" @tap="confirmBuy">
-          {{ buySku && buyStock <= 0 ? '已售罄' : '购买 · ¥' + fmtPrice(buyTotal) }}
+          {{ buySku && buyStock <= 0 ? '已售罄' : '购买 · ¥' + fmtPrice(buyTotal) }} </view>
         </view>
       </view>
-    </view>
 
-    <!-- 底部 TabBar -->
-    <TabBar current="home" />
-  </view>
+      <!-- 底部 TabBar -->
+      <TabBar current="home" />
+    </view>
 </template>
 
 <script>
@@ -397,9 +374,9 @@ export default {
         this.buySkuList = resp.skus || []
         // 默认选中每个规格组第一项（保证有可匹配 SKU）
         const selected = {}
-        ;(this.buySpecs).forEach(s => {
-          if (s.values && s.values.length > 0) selected[s.name] = s.values[0]
-        })
+          ; (this.buySpecs).forEach(s => {
+            if (s.values && s.values.length > 0) selected[s.name] = s.values[0]
+          })
         this.buySelected = selected
       } catch (e) {
         console.error('加载购买规格失败:', e)
@@ -453,6 +430,10 @@ export default {
     },
     goSharePoster() {
       uni.navigateTo({ url: '/pages/share-poster/index' })
+    },
+    // 进入「推广」tab 页（项目使用自定义 TabBar，tab 间跳转统一用 redirectTo）
+    goPromo() {
+      uni.redirectTo({ url: '/pages/promo/index' })
     }
   }
 }
@@ -466,6 +447,7 @@ export default {
 .safe-top {
   height: env(safe-area-inset-top);
 }
+
 .safe-top.white {
   background: #fff;
 }
@@ -479,6 +461,7 @@ export default {
   justify-content: center;
   border-bottom: 1rpx solid #f0f0f0;
 }
+
 .nav-title {
   font-size: 32rpx;
   font-weight: 600;
@@ -497,6 +480,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 10rpx 30rpx rgba(45, 110, 57, 0.12);
 }
+
 .hero-image {
   width: 100%;
   height: 255rpx;
@@ -510,6 +494,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 10rpx 30rpx rgba(45, 110, 57, 0.1);
 }
+
 .mall-swiper-image {
   width: 100%;
   height: 200rpx;
@@ -522,6 +507,7 @@ export default {
   border-radius: 24rpx;
   box-shadow: 0 10rpx 30rpx rgba(45, 110, 57, 0.12);
 }
+
 .hero image {
   width: 100%;
   height: 100%;
@@ -534,6 +520,7 @@ export default {
   display: flex;
   justify-content: space-between;
 }
+
 .quick-item {
   display: flex;
   flex-direction: column;
@@ -542,17 +529,20 @@ export default {
   flex: 1;
   min-width: 0;
 }
+
 .quick-icon {
   width: 88rpx;
   height: 88rpx;
   flex: none;
 }
+
 .quick-title {
   font-size: 24rpx;
   font-weight: 700;
   white-space: nowrap;
   line-height: 1.2;
 }
+
 .quick-desc {
   font-size: 18rpx;
   color: #7d837f;
@@ -565,9 +555,11 @@ export default {
   margin-top: 20rpx;
   padding: 8rpx;
 }
+
 .search-row .search-box {
   background: #f8faf8;
 }
+
 .search-submit {
   width: 110rpx;
   height: 58rpx;
@@ -583,12 +575,14 @@ export default {
   margin-top: 20rpx;
   width: 100%;
 }
+
 .category-list {
   display: inline-flex;
   padding: 18rpx 12rpx;
   gap: 8rpx;
   white-space: nowrap;
 }
+
 .category-item {
   width: 108rpx;
   height: 120rpx;
@@ -601,17 +595,20 @@ export default {
   font-size: 21rpx;
   border-radius: 18rpx;
 }
+
 .category-item.active {
   color: #20b768;
   background: #eaf8ef;
   font-weight: 700;
 }
+
 .category-name {
   max-width: 96rpx;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .category-art {
   height: 52rpx;
   width: 52rpx;
@@ -630,10 +627,12 @@ export default {
   justify-content: space-between;
   align-items: flex-end;
 }
+
 .heading-title {
   font-size: 34rpx;
   font-weight: 800;
 }
+
 .heading-sub {
   font-size: 22rpx;
   color: #7d837f;
@@ -645,10 +644,12 @@ export default {
   flex-wrap: wrap;
   gap: 18rpx;
 }
+
 .product-card {
   width: calc(50% - 9rpx);
   overflow: hidden;
 }
+
 .product-image-wrap {
   width: 100%;
   padding-top: 100%;
@@ -656,6 +657,7 @@ export default {
   background: #f2f5f1;
   overflow: hidden;
 }
+
 .product-image {
   position: absolute;
   top: 0;
@@ -663,20 +665,24 @@ export default {
   width: 100%;
   height: 100%;
 }
+
 .product-content {
   padding: 18rpx 18rpx 20rpx;
 }
+
 .product-title {
   display: block;
   font-size: 30rpx;
   font-weight: 700;
 }
+
 .product-desc {
   display: block;
   margin-top: 8rpx;
   font-size: 23rpx;
   color: #747a75;
 }
+
 .tag-row {
   margin-top: 12rpx;
   height: 35rpx;
@@ -684,6 +690,7 @@ export default {
   gap: 7rpx;
   overflow: hidden;
 }
+
 .tag-row text {
   padding: 4rpx 9rpx;
   border-radius: 7rpx;
@@ -693,25 +700,30 @@ export default {
   font-size: 18rpx;
   white-space: nowrap;
 }
+
 .price-row {
   margin-top: 16rpx;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
 }
+
 .price-info {
   display: flex;
   align-items: baseline;
 }
+
 .currency {
   color: #ff3b42;
   font-size: 22rpx;
 }
+
 .price {
   color: #ff3b42;
   font-size: 34rpx;
   font-weight: 800;
 }
+
 .buy-btn {
   padding: 10rpx 28rpx;
   border-radius: 30rpx;
@@ -721,25 +733,30 @@ export default {
   font-weight: 600;
   white-space: nowrap;
 }
+
 .price-suffix {
   margin-left: 4rpx;
   color: #ff3b42;
   font-size: 20rpx;
 }
+
 .sold-row {
   margin-top: 8rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .sold-text {
   font-size: 20rpx;
   color: #9aa09b;
 }
+
 .stock-text {
   font-size: 20rpx;
   color: #ff3b42;
 }
+
 .load-status {
   padding: 28rpx 0;
   text-align: center;
@@ -760,6 +777,7 @@ export default {
   background: rgba(0, 0, 0, 0.45);
   z-index: 100;
 }
+
 .buy-panel {
   position: absolute;
   left: 0;
@@ -772,6 +790,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .buy-head {
   display: flex;
   align-items: flex-end;
@@ -779,6 +798,7 @@ export default {
   padding-bottom: 24rpx;
   border-bottom: 1rpx solid #f0f2ef;
 }
+
 .buy-thumb {
   width: 160rpx;
   height: 160rpx;
@@ -786,56 +806,67 @@ export default {
   background: #f2f5f1;
   flex: none;
 }
+
 .buy-info {
   flex: 1;
   min-width: 0;
 }
+
 .buy-title {
   display: block;
   font-size: 28rpx;
   font-weight: 700;
   line-height: 1.4;
 }
+
 .buy-price-line {
   margin-top: 10rpx;
   display: flex;
   align-items: baseline;
   gap: 12rpx;
 }
+
 .buy-price {
   color: #ff3b42;
   font-size: 38rpx;
   font-weight: 800;
 }
+
 .buy-stock {
   font-size: 22rpx;
   color: #9aa09b;
 }
+
 .buy-close {
   font-size: 40rpx;
   color: #c0c4c0;
   padding: 0 8rpx;
 }
+
 .buy-body {
   flex: 1;
   overflow: hidden;
   max-height: 40vh;
   padding-top: 24rpx;
 }
+
 .buy-spec-group {
   margin-bottom: 24rpx;
 }
+
 .buy-spec-name {
   display: block;
   font-size: 26rpx;
   font-weight: 700;
   margin-bottom: 14rpx;
 }
+
 .buy-spec-options {
   display: flex;
   flex-wrap: wrap;
   gap: 14rpx;
 }
+
 .buy-spec-option {
   padding: 12rpx 28rpx;
   border-radius: 10rpx;
@@ -844,30 +875,36 @@ export default {
   font-size: 24rpx;
   color: #3a3f3b;
 }
+
 .buy-spec-option.active {
   background: #eaf8ef;
   border-color: #27b969;
   color: #15995a;
   font-weight: 700;
 }
+
 .buy-spec-option.disabled {
   opacity: 0.4;
   color: #9aa09b;
 }
+
 .buy-qty-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8rpx;
 }
+
 .buy-qty-row .buy-spec-name {
   margin-bottom: 0;
 }
+
 .buy-stepper {
   display: flex;
   align-items: center;
   gap: 20rpx;
 }
+
 .buy-step-btn {
   width: 48rpx;
   height: 48rpx;
@@ -878,15 +915,18 @@ export default {
   color: #3a3f3b;
   font-size: 30rpx;
 }
+
 .buy-step-btn.disabled {
   opacity: 0.35;
 }
+
 .buy-step-num {
   min-width: 40rpx;
   text-align: center;
   font-size: 28rpx;
   font-weight: 700;
 }
+
 .buy-submit {
   margin-top: 20rpx;
   height: 84rpx;
@@ -898,6 +938,7 @@ export default {
   font-size: 30rpx;
   font-weight: 700;
 }
+
 .buy-submit.disabled {
   opacity: 0.5;
 }

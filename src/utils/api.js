@@ -6,7 +6,7 @@
  */
 
 // 后端 API 地址（开发环境；后端已回到 8000 端口，手动启动无 reload）
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'https://zitangxhapiwx.yxiaozhu.com'
 
 // 后端返回的相对路径资源（/static/...）→ 完整可访问 URL；已是完整 URL 或 base64 则原样返回
 export function resolveAssetUrl(url) {

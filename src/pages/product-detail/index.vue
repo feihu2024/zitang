@@ -15,14 +15,8 @@
 
     <template v-else>
       <!-- 轮播图 -->
-      <swiper
-        v-if="gallery.length > 0"
-        class="hero-swiper"
-        :indicator-dots="gallery.length > 1"
-        :circular="gallery.length > 1"
-        indicator-active-color="#20b768"
-        indicator-color="rgba(255,255,255,0.5)"
-      >
+      <swiper v-if="gallery.length > 0" class="hero-swiper" :indicator-dots="gallery.length > 1"
+        :circular="gallery.length > 1" indicator-active-color="#20b768" indicator-color="rgba(255,255,255,0.5)">
         <swiper-item v-for="(img, i) in gallery" :key="i" @tap="previewImage(i)">
           <image class="hero-image" :src="img" mode="aspectFill" />
         </swiper-item>
@@ -40,7 +34,8 @@
         </view>
         <view class="sales-stock">
           <text>已售 {{ formatSales(product.sold) }}</text>
-          <text :class="{ 'soldout': currentStock === 0 }">{{ currentStock === 0 ? '已售罄' : '库存 ' + currentStock }}</text>
+          <text :class="{ 'soldout': currentStock === 0 }">{{ currentStock === 0 ? '已售罄' : '库存 ' + currentStock
+          }}</text>
         </view>
         <text class="detail-title">{{ product.name }}</text>
         <text class="detail-sub" v-if="product.subtitle">{{ product.subtitle }}</text>
@@ -69,13 +64,22 @@
 
       <!-- 底部操作栏 -->
       <view class="buy-bar">
-        <view class="mini-action" @tap="showComing">
+        <!-- #ifdef MP-WEIXIN -->
+        <!-- 小程序端：open-type=share 拉起转发面板，内容由 onShareAppMessage 提供 -->
+        <button class="mini-action share-btn" open-type="share">
+          <text class="mini-icon">↗</text>
+          <text class="mini-label">分享</text>
+        </button>
+        <!-- #endif -->
+        <!-- #ifndef MP-WEIXIN -->
+        <view class="mini-action" @tap="onShareTap">
           <text class="mini-icon">↗</text>
           <text class="mini-label">分享</text>
         </view>
-        <view class="mini-action" @tap="showComing">
-          <text class="mini-icon">♧</text>
-          <text class="mini-label">客服</text>
+        <!-- #endif -->
+        <view class="mini-action" @tap="goHome">
+          <text class="mini-icon">⌂</text>
+          <text class="mini-label">首页</text>
         </view>
         <view class="buy-btn primary" :class="{ disabled: !canBuy }" @tap="buyNow">立即购买</view>
       </view>
@@ -99,13 +103,8 @@
           <view v-for="(spec, si) in product.specs" :key="si" class="spec-group">
             <text class="spec-group-name">{{ spec.name }}</text>
             <view class="spec-options">
-              <text
-                v-for="(val, vi) in spec.values"
-                :key="vi"
-                class="spec-option"
-                :class="{ active: selectedSpec[spec.name] === val }"
-                @tap="selectSpec(spec.name, val)"
-              >{{ val }}</text>
+              <text v-for="(val, vi) in spec.values" :key="vi" class="spec-option"
+                :class="{ active: selectedSpec[spec.name] === val }" @tap="selectSpec(spec.name, val)">{{ val }}</text>
             </view>
           </view>
         </scroll-view>
@@ -198,17 +197,32 @@ export default {
     if (img && img.indexOf('http') === 0) result.imageUrl = img
     return result
   },
+  // 商品级分享到朋友圈：query 携带商品 id 与邀请码
+  onShareTimeline() {
+    const p = this.product
+    const sharePath = buildSharePath('/pages/product-detail/index?id=' + this.productId)
+    const result = {
+      title: (p && p.shareTitle) || (p ? p.name : '好物推荐'),
+      query: sharePath.split('?')[1] || ''
+    }
+    let img = p && p.shareImage ? resolveAssetUrl(p.shareImage) : ''
+    if (!img || img.indexOf('http') !== 0) img = this.gallery[0] || ''
+    if (img && img.indexOf('http') === 0) result.imageUrl = img
+    return result
+  },
   methods: {
     async loadDetail() {
       this.loading = true
       try {
         const resp = await get('/api/wxapp/products/' + this.productId)
+        // 富文本图片自适应屏幕，避免超出
+        resp.detailHtml = this.adaptRichHtml(resp.detailHtml)
         this.product = resp
         // 默认选中每个规格组的第一项
         const selected = {}
-        ;(resp.specs || []).forEach(s => {
-          if (s.values && s.values.length > 0) selected[s.name] = s.values[0]
-        })
+          ; (resp.specs || []).forEach(s => {
+            if (s.values && s.values.length > 0) selected[s.name] = s.values[0]
+          })
         this.selectedSpec = selected
       } catch (e) {
         console.error('加载商品详情失败:', e)
@@ -220,6 +234,16 @@ export default {
     fmtPrice(v) {
       const n = Number(v) || 0
       return n % 1 === 0 ? String(n) : n.toFixed(2)
+    },
+    // 富文本图片自适应：给 img 注入最大宽度约束（rich-text 无法用页面样式穿透）
+    adaptRichHtml(html) {
+      if (!html) return ''
+      return html.replace(/<img[^>]*>/gi, (tag) => {
+        if (/style\s*=/i.test(tag)) {
+          return tag.replace(/style\s*=\s*(["'])/i, (m, q) => 'style=' + q + 'max-width:100%;height:auto;')
+        }
+        return tag.replace(/<img/i, '<img style="max-width:100%;height:auto;display:block;"')
+      })
     },
     formatSales(sold) {
       const n = Number(sold) || 0
@@ -269,6 +293,24 @@ export default {
     showComing() {
       uni.showToast({ title: '功能即将开放', icon: 'none' })
     },
+    // 跳转首页（项目使用自定义 TabBar，tab 页间统一用 redirectTo）
+    goHome() {
+      uni.redirectTo({ url: '/pages/home/index' })
+    },
+    // H5 端分享：优先调用系统分享面板，不支持时复制商品链接
+    onShareTap() {
+      const p = this.product
+      const title = (p && p.shareTitle) || (p ? p.name : '好物推荐')
+      const link = window.location.href
+      if (navigator && typeof navigator.share === 'function') {
+        navigator.share({ title, url: link }).catch(() => { /* 用户取消不提示 */ })
+      } else {
+        uni.setClipboardData({
+          data: link,
+          success: () => uni.showToast({ title: '链接已复制，快去分享吧', icon: 'none' })
+        })
+      }
+    },
     goBack() {
       uni.navigateBack({ delta: 1 })
     }
@@ -292,16 +334,19 @@ export default {
   padding: 0 24rpx;
   background: #fff;
 }
+
 .nav-back {
   font-size: 44rpx;
   color: #1f2320;
   font-weight: 700;
   padding: 0 12rpx;
 }
+
 .nav-title {
   font-size: 30rpx;
   font-weight: 700;
 }
+
 .capsule {
   font-size: 22rpx;
   color: #9aa09b;
@@ -319,10 +364,12 @@ export default {
   width: 100%;
   height: 750rpx;
 }
+
 .hero-image {
   width: 100%;
   height: 100%;
 }
+
 .placeholder-swiper {
   display: block;
   background: #f2f5f1;
@@ -333,25 +380,30 @@ export default {
   margin: 20rpx 24rpx 0;
   padding: 28rpx 28rpx 24rpx;
 }
+
 .price-line {
   display: flex;
   align-items: baseline;
 }
+
 .price-symbol {
   color: #ff3b42;
   font-size: 28rpx;
   font-weight: 700;
 }
+
 .price-big {
   color: #ff3b42;
   font-size: 52rpx;
   font-weight: 800;
 }
+
 .price-suffix {
   margin-left: 6rpx;
   color: #ff3b42;
   font-size: 24rpx;
 }
+
 .sales-stock {
   margin-top: 10rpx;
   display: flex;
@@ -359,9 +411,11 @@ export default {
   font-size: 22rpx;
   color: #9aa09b;
 }
+
 .sales-stock .soldout {
   color: #ff3b42;
 }
+
 .detail-title {
   display: block;
   margin-top: 16rpx;
@@ -369,17 +423,20 @@ export default {
   font-weight: 800;
   line-height: 1.4;
 }
+
 .detail-sub {
   display: block;
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #747a75;
 }
+
 .detail-tags {
   margin-top: 16rpx;
   display: flex;
   gap: 10rpx;
 }
+
 .detail-tags text {
   padding: 6rpx 14rpx;
   border-radius: 8rpx;
@@ -388,6 +445,7 @@ export default {
   border: 1rpx solid #b8ebca;
   font-size: 20rpx;
 }
+
 .detail-tags .candy-tag {
   color: #e0447f;
   background: #fdeef3;
@@ -402,12 +460,14 @@ export default {
   align-items: center;
   gap: 16rpx;
 }
+
 .spec-label {
   font-size: 26rpx;
   color: #1f2320;
   font-weight: 700;
   flex: none;
 }
+
 .spec-value {
   flex: 1;
   font-size: 26rpx;
@@ -416,6 +476,7 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .spec-arrow {
   color: #c0c4c0;
   font-size: 32rpx;
@@ -426,17 +487,20 @@ export default {
   margin: 20rpx 24rpx 0;
   padding: 28rpx;
 }
+
 .block-title {
   display: block;
   margin-bottom: 20rpx;
   font-size: 28rpx;
   font-weight: 800;
 }
+
 .rich-body {
   font-size: 26rpx;
   color: #3a3f3b;
   line-height: 1.7;
 }
+
 .empty-story .empty-text {
   font-size: 24rpx;
   color: #9aa09b;
@@ -460,6 +524,7 @@ export default {
   box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
   z-index: 10;
 }
+
 .mini-action {
   display: flex;
   flex-direction: column;
@@ -468,14 +533,31 @@ export default {
   width: 76rpx;
   flex: none;
 }
+
+/* 小程序分享按钮：清除 button 默认背景/边框/内边距，外观与普通图标入口一致 */
+.share-btn {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  line-height: normal;
+  font-size: inherit;
+}
+
+.share-btn::after {
+  border: none;
+}
+
 .mini-icon {
-  font-size: 34rpx;
+  font-size: 40rpx;
   color: #4b504c;
 }
+
 .mini-label {
-  font-size: 18rpx;
+  font-size: 22rpx;
   color: #7d837f;
 }
+
 .buy-btn {
   flex: 1;
   height: 76rpx;
@@ -486,9 +568,11 @@ export default {
   font-weight: 700;
   color: #fff;
 }
+
 .buy-btn.disabled {
   opacity: 0.5;
 }
+
 .buy-btn.primary {
   background: linear-gradient(90deg, #52c47d, #27b969);
 }
@@ -506,6 +590,7 @@ export default {
   background: rgba(0, 0, 0, 0.45);
   z-index: 100;
 }
+
 .spec-panel {
   position: absolute;
   left: 0;
@@ -518,6 +603,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .spec-head {
   display: flex;
   align-items: flex-end;
@@ -525,6 +611,7 @@ export default {
   padding-bottom: 24rpx;
   border-bottom: 1rpx solid #f0f2ef;
 }
+
 .spec-thumb {
   width: 160rpx;
   height: 160rpx;
@@ -532,45 +619,54 @@ export default {
   background: #f2f5f1;
   flex: none;
 }
+
 .spec-info {
   flex: 1;
   min-width: 0;
 }
+
 .spec-price-line {
   display: flex;
   align-items: baseline;
 }
+
 .spec-stock {
   display: block;
   margin-top: 8rpx;
   font-size: 22rpx;
   color: #9aa09b;
 }
+
 .spec-close {
   font-size: 40rpx;
   color: #c0c4c0;
   padding: 0 8rpx;
 }
+
 .spec-body {
   flex: 1;
   overflow: hidden;
   max-height: 40vh;
   padding-top: 24rpx;
 }
+
 .spec-group {
   margin-bottom: 24rpx;
 }
+
 .spec-group-name {
   display: block;
   font-size: 26rpx;
   font-weight: 700;
   margin-bottom: 14rpx;
 }
+
 .spec-options {
   display: flex;
   flex-wrap: wrap;
   gap: 14rpx;
 }
+
 .spec-option {
   padding: 12rpx 28rpx;
   border-radius: 10rpx;
@@ -579,12 +675,14 @@ export default {
   font-size: 24rpx;
   color: #3a3f3b;
 }
+
 .spec-option.active {
   background: #eaf8ef;
   border-color: #27b969;
   color: #15995a;
   font-weight: 700;
 }
+
 .spec-confirm {
   margin-top: 20rpx;
   height: 84rpx;

@@ -13,29 +13,15 @@
       <view class="promo-search">
         <view class="search-box">
           <view class="search-icon"></view>
-          <input
-            class="search-input"
-            placeholder="搜索素材名称"
-            confirm-type="search"
-            :value="searchValue"
-            @input="onSearchInput"
-            @confirm="onSearch"
-          />
+          <input class="search-input" placeholder="搜索素材名称" confirm-type="search" :value="searchValue"
+            @input="onSearchInput" @confirm="onSearch" />
         </view>
       </view>
 
       <!-- 宣传页 Banner 轮播（后台「宣传页Banner」配置） -->
-      <swiper
-        v-if="banners.length > 0"
-        class="promo-banner"
-        :indicator-dots="banners.length > 1"
-        :autoplay="banners.length > 1"
-        :circular="banners.length > 1"
-        interval="4500"
-        duration="500"
-        indicator-active-color="#168444"
-        indicator-color="rgba(255,255,255,0.5)"
-      >
+      <swiper v-if="banners.length > 0" class="promo-banner" :indicator-dots="banners.length > 1"
+        :autoplay="banners.length > 1" :circular="banners.length > 1" interval="4500" duration="500"
+        indicator-active-color="#168444" indicator-color="rgba(255,255,255,0.5)">
         <swiper-item v-for="(banner, idx) in banners" :key="banner.id" @tap="onBannerTap(banner)">
           <image class="promo-banner-img" :src="banner.imageUrl" mode="aspectFill" />
         </swiper-item>
@@ -44,13 +30,8 @@
       <!-- 分类标签横向滚动 -->
       <scroll-view class="promo-tabs" scroll-x show-scrollbar="false">
         <view class="promo-tab-list">
-          <text
-            v-for="(tab, idx) in tabs"
-            :key="idx"
-            class="promo-tab"
-            :class="{ active: currentTab === idx }"
-            @tap="setTab(idx)"
-          >{{ tab }}</text>
+          <text v-for="(tab, idx) in tabs" :key="idx" class="promo-tab" :class="{ active: currentTab === idx }"
+            @tap="setTab(idx)">{{ tab }}</text>
         </view>
       </scroll-view>
 
@@ -78,11 +59,7 @@
       </view>
       <!-- 素材列表 -->
       <view v-else class="promo-list">
-        <view
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="promo-card card"
-        >
+        <view v-for="item in filteredItems" :key="item.id" class="promo-card card">
           <image class="promo-image" :src="item.cover" mode="aspectFill" />
           <view class="promo-main">
             <view class="promo-title">
@@ -333,9 +310,11 @@ export default {
   background: #fafafa;
   overflow-x: hidden;
 }
+
 .promo-top-bg {
   background: #fff;
 }
+
 .promo-shell {
   padding-bottom: 48rpx;
   overflow-x: hidden;
@@ -351,10 +330,12 @@ export default {
   background: #fff;
   position: relative;
 }
+
 .nav-title {
   font-size: 34rpx;
   font-weight: 700;
 }
+
 .nav-instructions {
   position: absolute;
   right: 33rpx;
@@ -367,6 +348,7 @@ export default {
   padding: 18rpx 26rpx;
   background: #fff;
 }
+
 .promo-search .search-box {
   background: #f7f7f7;
 }
@@ -379,6 +361,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 8rpx 24rpx rgba(22, 132, 68, 0.1);
 }
+
 .promo-banner-img {
   width: 100%;
   height: 220rpx;
@@ -389,6 +372,7 @@ export default {
   background: #fff;
   border-bottom: 1rpx solid #eee;
 }
+
 .promo-tab-list {
   height: 82rpx;
   display: inline-flex;
@@ -396,6 +380,7 @@ export default {
   padding: 0 32rpx;
   gap: 52rpx;
 }
+
 .promo-tab {
   height: 82rpx;
   line-height: 82rpx;
@@ -404,10 +389,12 @@ export default {
   color: #555;
   font-size: 25rpx;
 }
+
 .promo-tab.active {
   color: #168444;
   font-weight: 700;
 }
+
 .promo-tab.active::after {
   content: '';
   position: absolute;
@@ -430,6 +417,7 @@ export default {
   font-size: 23rpx;
   color: #555;
 }
+
 .sort-caret {
   margin-left: 8rpx;
   color: #999;
@@ -439,6 +427,7 @@ export default {
 .promo-list {
   padding: 0 24rpx;
 }
+
 .promo-card {
   min-height: 190rpx;
   margin-bottom: 14rpx;
@@ -447,21 +436,25 @@ export default {
   align-items: center;
   gap: 24rpx;
 }
+
 .promo-image {
   width: 150rpx;
   height: 164rpx;
   flex: none;
   border-radius: 13rpx;
 }
+
 .promo-main {
   flex: 1;
   min-width: 0;
 }
+
 .promo-title {
   display: flex;
   align-items: center;
   gap: 12rpx;
 }
+
 .promo-title .ellipsis {
   max-width: 360rpx;
   font-size: 27rpx;
@@ -470,26 +463,31 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .promo-tag {
   padding: 4rpx 10rpx;
   border-radius: 18rpx;
   font-size: 17rpx;
   white-space: nowrap;
 }
+
 .promo-tag.new {
   color: #1c9e55;
   background: #e9f8ee;
 }
+
 .promo-tag.hot {
   color: #258edc;
   background: #eaf4fd;
 }
+
 .promo-meta {
   display: block;
   margin-top: 16rpx;
   color: #969a97;
   font-size: 20rpx;
 }
+
 .promo-counts {
   display: flex;
   margin-top: 24rpx;
@@ -497,15 +495,18 @@ export default {
   color: #4d514e;
   font-size: 20rpx;
 }
+
 .count-item {
   display: flex;
   flex-direction: column;
 }
+
 .count-label {
   margin-top: 5rpx;
   color: #777;
-  font-size: 17rpx;
+  font-size: 22rpx;
 }
+
 .view-btn {
   width: 112rpx;
   height: 48rpx;
@@ -538,14 +539,17 @@ export default {
   flex-direction: column;
   align-items: center;
 }
+
 .state-icon {
   font-size: 60rpx;
 }
+
 .state-text {
   margin-top: 18rpx;
   color: #9aa09c;
   font-size: 24rpx;
 }
+
 .state-retry {
   margin-top: 22rpx;
   padding: 10rpx 40rpx;
@@ -570,6 +574,7 @@ export default {
   padding: 0 20rpx;
   border-radius: 33rpx;
 }
+
 .promo-search .search-icon {
   width: 26rpx;
   height: 26rpx;
@@ -578,6 +583,7 @@ export default {
   border-radius: 50%;
   position: relative;
 }
+
 .promo-search .search-icon::after {
   content: '';
   position: absolute;
@@ -589,6 +595,7 @@ export default {
   border-radius: 2rpx;
   transform: rotate(45deg);
 }
+
 .promo-search .search-input {
   flex: 1;
   font-size: 24rpx;

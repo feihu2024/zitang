@@ -1,6 +1,6 @@
 {
   "name": "植萃生活",
-  "appid": "",
+  "appid": "wxef4cd5f53257d905",
   "description": "植萃生活小程序端 - uni-app 跨端开发",
   "versionName": "1.0.0",
   "versionCode": 100,
@@ -28,7 +28,7 @@
   },
   "quickapp": {},
   "mp-weixin": {
-    "appid": "",
+    "appid": "wxef4cd5f53257d905",
     "setting": {
       "urlCheck": false,
       "es6": true,
