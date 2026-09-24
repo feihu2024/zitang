@@ -40,7 +40,8 @@
             <text v-if="member.phone" class="member-phone">☎　{{ maskPhone(member.phone) }}</text>
             <view v-else class="phone-bind-row">
               <!-- #ifdef MP-WEIXIN -->
-              <button v-if="phoneMode === 'real'" class="mini-btn" open-type="getPhoneNumber" @getphonenumber="onGetPhone">
+              <button v-if="phoneMode === 'real'" class="mini-btn" open-type="getPhoneNumber"
+                @getphonenumber="onGetPhone">
                 授权微信手机号
               </button>
               <button v-else class="mini-btn" @tap="openPhonePop">绑定手机号</button>
@@ -66,7 +67,8 @@
           <view class="asset-body">
             <text class="asset-label">余额</text>
             <text class="asset-value">¥{{ member ? formatMoney(member.balance) : '0.00' }}</text>
-            <text v-if="member && member.frozenBalance > 0" class="asset-frozen">冻结 {{ formatMoney(member.frozenBalance) }}</text>
+            <text v-if="member && member.frozenBalance > 0" class="asset-frozen">冻结 {{ formatMoney(member.frozenBalance)
+            }}</text>
             <text v-else class="asset-frozen-holder">暂无冻结</text>
           </view>
           <text class="asset-arrow">›</text>
@@ -165,7 +167,7 @@
           <text class="menu-label">分享好友</text>
           <text class="menu-arrow">›</text>
         </view>
-        <view class="menu-item" @tap="coming('客服在线时间 9:00–21:00')">
+        <view class="menu-item" @tap="goCustomerService">
           <text class="menu-icon">♬</text>
           <text class="menu-label">联系客服</text>
           <text class="menu-arrow">›</text>
@@ -175,7 +177,7 @@
           <text class="menu-label">地址管理</text>
           <text class="menu-arrow">›</text>
         </view>
-        <view class="menu-item" @tap="coming('隐私协议')">
+        <view class="menu-item" @tap="goPrivacy">
           <text class="menu-icon">◇</text>
           <text class="menu-label">隐私协议</text>
           <text class="menu-arrow">›</text>
@@ -251,7 +253,8 @@
         <!-- #endif -->
         <view class="edit-row">
           <text class="edit-label">昵称</text>
-          <input class="form-input edit-input" :type="isMP ? 'nickname' : 'text'" v-model="editPop.nickname" placeholder="微信授权昵称或自定义" maxlength="20" />
+          <input class="form-input edit-input" :type="isMP ? 'nickname' : 'text'" v-model="editPop.nickname"
+            placeholder="微信授权昵称或自定义" maxlength="20" />
         </view>
         <view class="edit-row">
           <text class="edit-label">姓名</text>
@@ -469,6 +472,14 @@ export default {
     goSharePoster() {
       uni.navigateTo({ url: '/pages/share-poster/index' })
     },
+    // 隐私协议（无需登录即可查看）
+    goPrivacy() {
+      uni.navigateTo({ url: '/pages/privacy/index' })
+    },
+    // 联系客服（无需登录即可查看）
+    goCustomerService() {
+      uni.navigateTo({ url: '/pages/customer-service/index' })
+    },
     // 地址管理（from=manage：只维护地址，不带下单选地址语义）
     goAddressList() {
       if (!isLoggedIn()) {
@@ -536,6 +547,7 @@ export default {
   background: linear-gradient(#f5f9f3, #fafafa);
   overflow-x: hidden;
 }
+
 .profile-shell {
   padding: 0 28rpx 44rpx;
 }
@@ -549,6 +561,7 @@ export default {
   background: linear-gradient(135deg, #f4fbf2 0%, #e7f5e6 55%, #fafdf9 100%);
   border: 1rpx solid rgba(61, 143, 76, 0.15);
 }
+
 .member-card::before {
   content: '';
   position: absolute;
@@ -559,6 +572,7 @@ export default {
   border-radius: 50%;
   background: rgba(91, 180, 103, 0.1);
 }
+
 .leaf {
   position: absolute;
   width: 82rpx;
@@ -567,15 +581,18 @@ export default {
   background: rgba(48, 152, 72, 0.16);
   transform: rotate(-28deg);
 }
+
 .leaf-a {
   right: 50rpx;
   top: 55rpx;
 }
+
 .leaf-b {
   right: 132rpx;
   top: 27rpx;
   transform: rotate(22deg) scale(0.72);
 }
+
 .member-edit {
   position: absolute;
   z-index: 3;
@@ -590,6 +607,7 @@ export default {
   color: #fff;
   font-size: 26rpx;
 }
+
 .member-profile {
   display: flex;
   align-items: center;
@@ -597,6 +615,7 @@ export default {
   position: relative;
   z-index: 2;
 }
+
 .css-avatar {
   width: 132rpx;
   height: 132rpx;
@@ -610,6 +629,7 @@ export default {
   background: linear-gradient(145deg, #d8f0d8, #78bf7c);
   box-shadow: 0 10rpx 28rpx rgba(52, 129, 68, 0.18);
 }
+
 .wx-avatar {
   width: 132rpx;
   height: 132rpx;
@@ -618,6 +638,7 @@ export default {
   border-radius: 50%;
   box-shadow: 0 10rpx 28rpx rgba(52, 129, 68, 0.18);
 }
+
 .avatar-text {
   width: 94rpx;
   height: 94rpx;
@@ -629,6 +650,7 @@ export default {
   font-size: 48rpx;
   font-weight: 700;
 }
+
 .avatar-badge {
   position: absolute;
   right: -10rpx;
@@ -641,19 +663,23 @@ export default {
   font-size: 13rpx;
   font-weight: 800;
 }
+
 .member-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+
 .member-name {
   font-size: 36rpx;
   font-weight: 700;
 }
+
 .member-name text {
   color: #2f9852;
 }
+
 .vip-pill {
   margin-top: 14rpx;
   padding: 8rpx 20rpx;
@@ -662,13 +688,16 @@ export default {
   color: #fff;
   font-size: 20rpx;
 }
+
 .member-phone {
   margin-top: 16rpx;
   font-size: 24rpx;
 }
+
 .phone-bind-row {
   margin-top: 14rpx;
 }
+
 .mini-btn {
   padding: 8rpx 22rpx;
   border-radius: 24rpx;
@@ -677,6 +706,7 @@ export default {
   font-size: 21rpx;
   line-height: 1.4;
 }
+
 .member-id {
   margin-top: 10rpx;
   color: #5e6f62;
@@ -686,6 +716,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .member-benefit {
   margin-top: 30rpx;
   padding: 24rpx 26rpx;
@@ -699,6 +730,7 @@ export default {
   position: relative;
   z-index: 2;
 }
+
 .crown {
   width: 66rpx;
   height: 66rpx;
@@ -710,6 +742,7 @@ export default {
   color: #2c8a43;
   font-size: 44rpx;
 }
+
 .benefit-title {
   font-size: 26rpx;
   font-weight: 700;
@@ -724,6 +757,7 @@ export default {
   justify-content: center;
   cursor: pointer;
 }
+
 .login-entry {
   position: relative;
   z-index: 2;
@@ -733,6 +767,7 @@ export default {
   gap: 24rpx;
   padding: 14rpx 0 18rpx;
 }
+
 .login-entry-copy {
   flex: 1;
   min-width: 0;
@@ -740,19 +775,23 @@ export default {
   flex-direction: column;
   align-items: flex-start;
 }
+
 .login-entry-copy .login-title {
   margin-top: 0;
   font-size: 36rpx;
 }
+
 .login-entry-copy .login-sub {
   margin-top: 8rpx;
   font-size: 22rpx;
 }
+
 .login-entry-copy .invite-tip {
   margin-top: 14rpx;
   padding: 10rpx 16rpx;
   font-size: 20rpx;
 }
+
 .login-entry-btn {
   flex: none;
   padding: 16rpx 34rpx;
@@ -762,6 +801,7 @@ export default {
   font-size: 26rpx;
   font-weight: 700;
 }
+
 .login-box {
   position: relative;
   z-index: 2;
@@ -776,6 +816,7 @@ export default {
 .sheet-mask {
   align-items: flex-end;
 }
+
 .login-sheet {
   width: 100%;
   background: #fff;
@@ -785,6 +826,7 @@ export default {
   max-height: 84vh;
   overflow-y: auto;
 }
+
 .sheet-handle {
   width: 72rpx;
   height: 8rpx;
@@ -792,35 +834,43 @@ export default {
   background: #e0e4e0;
   margin: 0 auto 10rpx;
 }
+
 .login-sheet .login-box {
   padding: 10rpx 0 16rpx;
 }
+
 .login-sheet .login-btn {
   width: 100%;
 }
+
 @keyframes sheet-up {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
 }
+
 .login-avatar {
   width: 120rpx;
   height: 120rpx;
 }
+
 .login-title {
   margin-top: 22rpx;
   font-size: 38rpx;
   font-weight: 800;
   color: #2c7a43;
 }
+
 .login-sub {
   margin-top: 12rpx;
   font-size: 23rpx;
   color: #7d837f;
 }
+
 .invite-tip {
   margin-top: 24rpx;
   padding: 14rpx 24rpx;
@@ -830,6 +880,7 @@ export default {
   color: #b26a12;
   font-size: 22rpx;
 }
+
 .login-btn {
   margin-top: 34rpx;
   width: 78%;
@@ -838,6 +889,7 @@ export default {
   font-size: 30rpx;
   background: linear-gradient(90deg, #3fae57, #237b39);
 }
+
 .login-note {
   margin-top: 20rpx;
   font-size: 20rpx;
@@ -845,15 +897,18 @@ export default {
   text-align: center;
   padding: 0 40rpx;
 }
+
 .h5-form {
   width: 82%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
+
 .h5-form .login-btn {
   width: 100%;
 }
+
 .form-input {
   margin-top: 22rpx;
   height: 82rpx;
@@ -880,23 +935,27 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .pop-card {
   width: 620rpx;
   background: #fff;
   border-radius: 28rpx;
   padding: 40rpx 36rpx 32rpx;
 }
+
 .pop-title {
   font-size: 32rpx;
   font-weight: 700;
   text-align: center;
   margin-bottom: 10rpx;
 }
+
 .pop-actions {
   margin-top: 36rpx;
   display: flex;
   gap: 24rpx;
 }
+
 .pop-cancel,
 .pop-ok {
   flex: 1;
@@ -906,31 +965,37 @@ export default {
   border-radius: 40rpx;
   font-size: 27rpx;
 }
+
 .pop-cancel {
   background: #f2f4f2;
   color: #666;
 }
+
 .pop-ok {
   background: linear-gradient(90deg, #3fae57, #237b39);
   color: #fff;
   font-weight: 700;
 }
+
 .edit-row {
   display: flex;
   align-items: center;
   margin-top: 26rpx;
   gap: 20rpx;
 }
+
 .edit-label {
   width: 90rpx;
   font-size: 26rpx;
   color: #555;
   flex: none;
 }
+
 .edit-input {
   flex: 1;
   margin-top: 0;
 }
+
 .avatar-pick-btn {
   width: 110rpx;
   height: 110rpx;
@@ -944,6 +1009,7 @@ export default {
   font-size: 20rpx;
   color: #888;
 }
+
 .pick-avatar {
   width: 110rpx;
   height: 110rpx;
@@ -955,6 +1021,7 @@ export default {
   padding: 34rpx 24rpx;
   display: flex;
 }
+
 .asset-item {
   flex: 1;
   display: flex;
@@ -964,9 +1031,11 @@ export default {
   padding: 8rpx 6rpx;
   min-width: 0;
 }
+
 .asset-item:not(:last-child) {
   border-right: 1rpx solid #e5e8e5;
 }
+
 .asset-icon {
   width: 56rpx;
   height: 56rpx;
@@ -979,10 +1048,12 @@ export default {
   font-weight: 700;
   flex: none;
 }
+
 .asset-icon.candy {
   background: #fdeef3;
   font-size: 26rpx;
 }
+
 .asset-body {
   display: flex;
   flex-direction: column;
@@ -990,11 +1061,13 @@ export default {
   font-size: 22rpx;
   min-width: 0;
 }
+
 .asset-label {
   color: #8a908b;
   font-size: 20rpx;
   white-space: nowrap;
 }
+
 .asset-frozen {
   align-self: flex-start;
   padding: 2rpx 14rpx;
@@ -1005,23 +1078,27 @@ export default {
   font-weight: 600;
   line-height: 1.6;
 }
+
 .asset-frozen-holder {
   color: transparent;
   font-size: 18rpx;
   line-height: 1.6;
   padding: 2rpx 14rpx;
 }
+
 .asset-arrow {
   color: #c2c7c3;
   font-size: 28rpx;
   flex: none;
 }
+
 .asset-value {
   color: #3b984b;
   font-size: 30rpx;
   font-weight: 700;
   white-space: nowrap;
 }
+
 .asset-value.candy-val {
   color: #e0447f;
 }
@@ -1031,23 +1108,28 @@ export default {
   margin-top: 32rpx;
   padding: 28rpx 28rpx 32rpx;
 }
+
 .card-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .heading-title {
   font-size: 30rpx;
   font-weight: 700;
 }
+
 .heading-more {
   font-size: 21rpx;
   color: #7d837f;
 }
+
 .order-grid {
   display: flex;
   margin-top: 32rpx;
 }
+
 .order-item {
   flex: 1;
   display: flex;
@@ -1056,12 +1138,14 @@ export default {
   gap: 18rpx;
   font-size: 22rpx;
 }
+
 .order-icon {
   line-height: 1.2;
   position: relative;
   color: #267a36;
   font-size: 36rpx;
 }
+
 .order-count {
   position: absolute;
   right: -18rpx;
@@ -1082,6 +1166,7 @@ export default {
   padding: 30rpx 16rpx;
   display: flex;
 }
+
 .shortcut-item {
   flex: 1;
   display: flex;
@@ -1093,9 +1178,11 @@ export default {
   min-width: 0;
   border-right: 1rpx solid #eee;
 }
+
 .shortcut-item:last-child {
   border-right: 0;
 }
+
 .shortcut-body {
   display: flex;
   flex-direction: column;
@@ -1105,12 +1192,14 @@ export default {
   gap: 5rpx;
   font-size: 22rpx;
 }
+
 .shortcut-title {
   font-size: 22rpx;
   font-weight: 600;
   color: #1d1d1f;
   white-space: nowrap;
 }
+
 .shortcut-desc {
   font-size: 18rpx;
   color: #7d837f;
@@ -1119,6 +1208,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .shortcut-icon {
   width: 66rpx;
   height: 66rpx;
@@ -1129,15 +1219,19 @@ export default {
   font-size: 33rpx;
   flex: none;
 }
+
 .green-bg {
   background: linear-gradient(145deg, #88d79b, #24a64b);
 }
+
 .orange-bg {
   background: linear-gradient(145deg, #ffc07c, #f19043);
 }
+
 .purple-bg {
   background: linear-gradient(145deg, #c29cff, #8053dc);
 }
+
 .blue-bg {
   background: linear-gradient(145deg, #7cc4ff, #2f88d6);
 }
@@ -1147,15 +1241,18 @@ export default {
   margin-top: 32rpx;
   padding: 10rpx 30rpx;
 }
+
 .menu-item {
   height: 96rpx;
   display: flex;
   align-items: center;
   border-bottom: 1rpx solid #eee;
 }
+
 .menu-item:last-child {
   border-bottom: 0;
 }
+
 .menu-icon {
   width: 52rpx;
   color: #277d37;
@@ -1163,10 +1260,12 @@ export default {
   text-align: center;
   flex: none;
 }
+
 .menu-label {
   flex: 1;
   font-size: 27rpx;
 }
+
 .menu-arrow {
   width: 30rpx;
   color: #999;

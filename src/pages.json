@@ -207,6 +207,20 @@
         "navigationBarTitleText": "分享海报",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/privacy/index",
+      "style": {
+        "navigationBarTitleText": "隐私协议",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/customer-service/index",
+      "style": {
+        "navigationBarTitleText": "联系客服",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
