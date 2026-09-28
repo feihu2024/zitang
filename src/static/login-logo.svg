@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+  <defs>
+    <linearGradient id="logoLeft" x1=".2" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#6dd8f7" />
+      <stop offset="1" stop-color="#0769f3" />
+    </linearGradient>
+    <linearGradient id="logoRight" x1=".6" y1="0" x2=".25" y2="1">
+      <stop offset="0" stop-color="#64e7ed" />
+      <stop offset=".6" stop-color="#27bde9" />
+      <stop offset="1" stop-color="#1598eb" />
+    </linearGradient>
+    <linearGradient id="logoDot" x1=".2" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#a0f26f" />
+      <stop offset="1" stop-color="#24cf9d" />
+    </linearGradient>
+  </defs>
+  <path d="M20 29c0-6 5-11 11-11h5c34 0 55 24 55 57 0 13-4 22-13 32-7 8-15 15-23 21-20-4-35-23-35-46Z" fill="url(#logoLeft)" />
+  <path d="M69 132c-5 0-9-4-9-9v-4c0-37 30-68 68-68h4c5 0 9 4 9 9v9c0 35-28 63-63 63Z" fill="url(#logoRight)" />
+  <circle cx="94" cy="30" r="23" fill="url(#logoDot)" />
+</svg>

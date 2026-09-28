@@ -3,8 +3,8 @@
     <view class="safe-top"></view>
     <view class="profile-shell">
 
-      <!-- ===== 未登录：登录入口卡片（点击弹出底部登录弹窗） ===== -->
-      <view v-if="!member" class="member-card card login-card" @tap="openLoginPop">
+      <!-- ===== 未登录：登录入口卡片（点击跳转登录页） ===== -->
+      <view v-if="!member" class="member-card card login-card" @tap="goLogin">
         <view class="leaf leaf-a"></view>
         <view class="leaf leaf-b"></view>
         <view class="login-entry">
@@ -190,42 +190,6 @@
       </view>
     </view>
 
-    <!-- ===== 登录弹窗（底部弹出） ===== -->
-    <view v-if="loginPop.show" class="pop-mask sheet-mask" @tap="closeLoginPop">
-      <view class="login-sheet" @tap.stop>
-        <view class="sheet-handle"></view>
-        <view class="login-box">
-          <view class="css-avatar login-avatar">
-            <text class="avatar-text">植</text>
-          </view>
-          <view class="login-title">植萃生活</view>
-          <view class="login-sub">登录后解锁拼团 / 秒杀 / 会员权益</view>
-
-          <view v-if="inviteCode" class="invite-tip">
-            🎁 检测到好友邀请码 {{ inviteCode }}，注册后自动绑定推荐关系
-          </view>
-
-          <!-- #ifdef MP-WEIXIN -->
-          <button class="primary-btn login-btn" :disabled="loading" @tap="onWxLogin">
-            {{ loading ? '登录中...' : '微信一键登录' }}
-          </button>
-          <view class="login-note">登录即代表同意将微信昵称、头像用于会员资料展示</view>
-          <!-- #endif -->
-
-          <!-- #ifdef H5 -->
-          <view class="h5-form">
-            <input class="form-input" v-model="form.nickname" placeholder="请输入昵称" maxlength="20" />
-            <input class="form-input" v-model="form.phone" placeholder="手机号（选填）" type="number" maxlength="11" />
-            <button class="primary-btn login-btn" :disabled="loading" @tap="onH5Login">
-              {{ loading ? '登录中...' : '登录 / 注册' }}
-            </button>
-            <view class="login-note">H5 环境为模拟登录，微信小程序内打开可使用微信授权登录</view>
-          </view>
-          <!-- #endif -->
-        </view>
-      </view>
-    </view>
-
     <!-- ===== 绑定手机号弹窗（模拟模式 / H5）===== -->
     <view v-if="phonePop.show" class="pop-mask" @tap="phonePop.show = false">
       <view class="pop-card" @tap.stop>
@@ -276,7 +240,7 @@
 import TabBar from '@/components/TabBar/TabBar.vue'
 import {
   isLoggedIn, getCachedMember, fetchProfile, fetchLoginMode,
-  wxLogin, h5Login, bindPhone, updateProfile,
+  bindPhone, updateProfile,
   getInviteCode
 } from '@/utils/auth.js'
 import { clearToken } from '@/utils/api.js'
@@ -291,10 +255,7 @@ export default {
       isMP: false,
       member: null,
       inviteCode: '',
-      loading: false,
       phoneMode: 'mock',
-      form: { nickname: '', phone: '' },
-      loginPop: { show: false },
       phonePop: { show: false, phone: '' },
       editPop: { show: false, nickname: '', realname: '', avatarUrl: '' }
     }
@@ -345,49 +306,9 @@ export default {
       this.phoneMode = await fetchLoginMode()
     },
 
-    // ---- 登录弹窗 ----
-    openLoginPop() {
-      this.loginPop.show = true
-    },
-    closeLoginPop() {
-      this.loginPop.show = false
-    },
-
-    // ---- 登录 ----
-    async onWxLogin() {
-      this.loading = true
-      try {
-        const res = await wxLogin()
-        this.member = res.member
-        this.loginPop.show = false
-        uni.showToast({ title: res.isNew ? '注册成功' : '登录成功', icon: 'success' })
-      } catch (e) {
-        uni.showToast({ title: e.message || '登录失败', icon: 'none' })
-      } finally {
-        this.loading = false
-      }
-    },
-    async onH5Login() {
-      if (!this.form.nickname.trim()) {
-        return uni.showToast({ title: '请输入昵称', icon: 'none' })
-      }
-      if (this.form.phone && !/^\d{6,11}$/.test(this.form.phone)) {
-        return uni.showToast({ title: '手机号格式不正确', icon: 'none' })
-      }
-      this.loading = true
-      try {
-        const res = await h5Login({
-          nickname: this.form.nickname.trim(),
-          phone: this.form.phone.trim()
-        })
-        this.member = res.member
-        this.loginPop.show = false
-        uni.showToast({ title: res.isNew ? '注册成功' : '登录成功', icon: 'success' })
-      } catch (e) {
-        uni.showToast({ title: e.message || '登录失败', icon: 'none' })
-      } finally {
-        this.loading = false
-      }
+    // ---- 登录页 ----
+    goLogin() {
+      uni.navigateTo({ url: '/pages/login/index' })
     },
 
     // ---- 手机号绑定 ----
@@ -484,7 +405,7 @@ export default {
     goAddressList() {
       if (!isLoggedIn()) {
         uni.showToast({ title: '请先登录', icon: 'none' })
-        setTimeout(() => this.openLoginPop(), 600)
+        setTimeout(() => this.goLogin(), 600)
         return
       }
       uni.navigateTo({ url: '/pages/address-list/index?from=manage' })
@@ -802,73 +723,9 @@ export default {
   font-weight: 700;
 }
 
-.login-box {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30rpx 0 16rpx;
-}
-
-/* ===== 底部弹窗（登录） ===== */
-.sheet-mask {
-  align-items: flex-end;
-}
-
-.login-sheet {
-  width: 100%;
-  background: #fff;
-  border-radius: 36rpx 36rpx 0 0;
-  padding: 16rpx 36rpx calc(36rpx + env(safe-area-inset-bottom));
-  animation: sheet-up 0.3s ease-out;
-  max-height: 84vh;
-  overflow-y: auto;
-}
-
-.sheet-handle {
-  width: 72rpx;
-  height: 8rpx;
-  border-radius: 8rpx;
-  background: #e0e4e0;
-  margin: 0 auto 10rpx;
-}
-
-.login-sheet .login-box {
-  padding: 10rpx 0 16rpx;
-}
-
-.login-sheet .login-btn {
-  width: 100%;
-}
-
-@keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
 .login-avatar {
   width: 120rpx;
   height: 120rpx;
-}
-
-.login-title {
-  margin-top: 22rpx;
-  font-size: 38rpx;
-  font-weight: 800;
-  color: #2c7a43;
-}
-
-.login-sub {
-  margin-top: 12rpx;
-  font-size: 23rpx;
-  color: #7d837f;
 }
 
 .invite-tip {
@@ -879,34 +736,6 @@ export default {
   border: 1rpx solid #ffd9a8;
   color: #b26a12;
   font-size: 22rpx;
-}
-
-.login-btn {
-  margin-top: 34rpx;
-  width: 78%;
-  height: 84rpx;
-  line-height: 84rpx;
-  font-size: 30rpx;
-  background: linear-gradient(90deg, #3fae57, #237b39);
-}
-
-.login-note {
-  margin-top: 20rpx;
-  font-size: 20rpx;
-  color: #9aa39c;
-  text-align: center;
-  padding: 0 40rpx;
-}
-
-.h5-form {
-  width: 82%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.h5-form .login-btn {
-  width: 100%;
 }
 
 .form-input {

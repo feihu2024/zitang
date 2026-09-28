@@ -12,13 +12,8 @@
     <!-- 状态筛选 Tab（全部/已支付/已发货/已完成） -->
     <scroll-view class="order-tabs" scroll-x>
       <view class="order-tabs-inner">
-        <view
-          v-for="(tab, idx) in tabs"
-          :key="idx"
-          class="order-tab"
-          :class="{ active: currentTab === idx }"
-          @tap="setTab(idx)"
-        >{{ tab.label }}</view>
+        <view v-for="(tab, idx) in tabs" :key="idx" class="order-tab" :class="{ active: currentTab === idx }"
+          @tap="setTab(idx)">{{ tab.label }}</view>
       </view>
     </scroll-view>
 
@@ -45,19 +40,13 @@
         <!-- 卡片头：来源标签 + 订单号 + 拼团状态 + 状态 -->
         <view class="order-head">
           <view class="order-head-left">
-            <text
-              v-if="o.orderSource && o.orderSource !== 'normal'"
-              class="src-tag"
-              :class="'src-' + o.orderSource"
-            >{{ sourceText(o.orderSource) }}</text>
+            <text v-if="o.orderSource && o.orderSource !== 'normal'" class="src-tag" :class="'src-' + o.orderSource">{{
+              sourceText(o.orderSource) }}</text>
             <text class="order-no">{{ o.orderNo }}</text>
           </view>
           <view class="order-head-right">
-            <text
-              v-if="o.status === 'paid' && o.groupNo && groupStatusText(o.groupStatus)"
-              class="group-tag"
-              :class="'gt-' + o.groupStatus"
-            >{{ groupStatusText(o.groupStatus) }}</text>
+            <text v-if="o.status === 'paid' && o.groupNo && groupStatusText(o.groupStatus)" class="group-tag"
+              :class="'gt-' + o.groupStatus">{{ groupStatusText(o.groupStatus) }}</text>
             <text class="order-status" :class="statusCls(o.status)">{{ statusText(o.status) }}</text>
           </view>
         </view>
@@ -85,21 +74,11 @@
             <text v-if="o.candyDiscount > 0" class="candy-badge">🍬抵¥{{ fmtPrice(o.candyDiscount) }}</text>
           </view>
           <view class="order-actions">
-            <view
-              v-if="o.status === 'shipped' || o.status === 'completed'"
-              class="mini-btn ghost"
-              @tap.stop="goLogistics(o)"
-            >查看物流</view>
-            <view
-              v-if="o.status === 'shipped'"
-              class="mini-btn primary"
-              @tap.stop="confirmReceive(o)"
-            >确认收货</view>
-            <view
-              v-else-if="o.status !== 'shipped' && o.status !== 'completed'"
-              class="mini-btn ghost"
-              @tap.stop="goDetail(o)"
-            >查看详情</view>
+            <view v-if="o.status === 'shipped' || o.status === 'completed'" class="mini-btn ghost"
+              @tap.stop="goLogistics(o)">查看物流</view>
+            <view v-if="o.status === 'shipped'" class="mini-btn primary" @tap.stop="confirmReceive(o)">确认收货</view>
+            <view v-else-if="o.status !== 'shipped' && o.status !== 'completed'" class="mini-btn ghost"
+              @tap.stop="goDetail(o)">查看详情</view>
           </view>
         </view>
       </view>
@@ -175,7 +154,7 @@ export default {
         const r = await get('/api/wxapp/orders', {
           page: this.page,
           size: this.size,
-          status: status || undefined
+          status: status || ''
         })
         this.total = r.total || 0
         const items = r.items || []
@@ -299,16 +278,19 @@ export default {
   padding: 0 24rpx;
   background: #fff;
 }
+
 .nav-back {
   font-size: 44rpx;
   color: #1f2320;
   font-weight: 700;
   padding: 0 12rpx;
 }
+
 .nav-title {
   font-size: 30rpx;
   font-weight: 700;
 }
+
 .capsule {
   font-size: 22rpx;
   color: #9aa09b;
@@ -319,20 +301,24 @@ export default {
   background: #fff;
   white-space: nowrap;
 }
+
 .order-tabs-inner {
   display: inline-flex;
   padding: 0 12rpx;
 }
+
 .order-tab {
   padding: 22rpx 26rpx 20rpx;
   font-size: 26rpx;
   color: #5d635e;
   position: relative;
 }
+
 .order-tab.active {
   color: #1f8f47;
   font-weight: 700;
 }
+
 .order-tab.active::after {
   content: '';
   position: absolute;
@@ -354,15 +340,18 @@ export default {
   align-items: center;
   gap: 20rpx;
 }
+
 .login-tip-icon,
 .empty-icon {
   font-size: 80rpx;
 }
+
 .login-tip-text,
 .empty-text {
   font-size: 26rpx;
   color: #9aa09b;
 }
+
 .login-tip-btn,
 .empty-btn {
   margin-top: 16rpx;
@@ -373,6 +362,7 @@ export default {
   font-size: 26rpx;
   font-weight: 700;
 }
+
 .page-tip {
   padding: 200rpx 0;
   text-align: center;
@@ -384,14 +374,17 @@ export default {
 .order-list {
   padding: 20rpx 24rpx 0;
 }
+
 .card {
   background: #fff;
   border-radius: 16rpx;
   padding: 24rpx;
 }
-.order-card + .order-card {
+
+.order-card+.order-card {
   margin-top: 20rpx;
 }
+
 .order-head {
   display: flex;
   align-items: center;
@@ -399,18 +392,21 @@ export default {
   padding-bottom: 18rpx;
   border-bottom: 1rpx solid #f0f2ef;
 }
+
 .order-head-left {
   display: flex;
   align-items: center;
   gap: 12rpx;
   min-width: 0;
 }
+
 .order-head-right {
   display: flex;
   align-items: center;
   gap: 12rpx;
   flex: none;
 }
+
 .src-tag {
   flex: none;
   padding: 2rpx 12rpx;
@@ -418,18 +414,22 @@ export default {
   font-size: 20rpx;
   font-weight: 600;
 }
+
 .src-groupbuy {
   background: #e6f0fd;
   color: #2f80ed;
 }
+
 .src-seckill {
   background: #fff1e5;
   color: #ff7a1a;
 }
+
 .src-lottery {
   background: #f0e8ff;
   color: #764ba2;
 }
+
 .group-tag {
   flex: none;
   padding: 2rpx 12rpx;
@@ -437,29 +437,51 @@ export default {
   font-size: 20rpx;
   font-weight: 600;
 }
+
 .gt-grouping {
   background: #fff1e5;
   color: #ff7a1a;
 }
+
 .gt-success {
   background: #e5f6ec;
   color: #27b969;
 }
+
 .order-no {
   font-size: 22rpx;
   color: #9aa09b;
   font-family: monospace;
 }
+
 .order-status {
   font-size: 24rpx;
   font-weight: 700;
 }
-.st-pay { color: #ff7a1a; }
-.st-paid { color: #2f80ed; }
-.st-ship { color: #27b969; }
-.st-done { color: #9aa09b; }
-.st-close { color: #b0b4b0; }
-.st-fail { color: #ff3b42; }
+
+.st-pay {
+  color: #ff7a1a;
+}
+
+.st-paid {
+  color: #2f80ed;
+}
+
+.st-ship {
+  color: #27b969;
+}
+
+.st-done {
+  color: #9aa09b;
+}
+
+.st-close {
+  color: #b0b4b0;
+}
+
+.st-fail {
+  color: #ff3b42;
+}
 
 /* 商品行 */
 .order-goods {
@@ -467,6 +489,7 @@ export default {
   gap: 20rpx;
   padding: 20rpx 0;
 }
+
 .goods-img {
   width: 130rpx;
   height: 130rpx;
@@ -474,12 +497,14 @@ export default {
   background: #f2f5f1;
   flex: none;
 }
+
 .goods-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
+
 .goods-name {
   font-size: 26rpx;
   font-weight: 700;
@@ -489,16 +514,19 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
 .goods-spec {
   margin-top: 8rpx;
   font-size: 22rpx;
   color: #9aa09b;
 }
+
 .goods-more {
   margin-top: 8rpx;
   font-size: 22rpx;
   color: #9aa09b;
 }
+
 .goods-right {
   flex: none;
   display: flex;
@@ -506,11 +534,13 @@ export default {
   align-items: flex-end;
   justify-content: space-between;
 }
+
 .goods-price {
   color: #ff3b42;
   font-size: 28rpx;
   font-weight: 800;
 }
+
 .goods-qty {
   font-size: 22rpx;
   color: #9aa09b;
@@ -524,20 +554,24 @@ export default {
   padding-top: 18rpx;
   border-top: 1rpx solid #f0f2ef;
 }
+
 .order-amount {
   font-size: 24rpx;
   color: #3a3f3b;
 }
+
 .amount-symbol {
   color: #ff3b42;
   font-size: 26rpx;
   font-weight: 800;
 }
+
 .amount-value {
   color: #ff3b42;
   font-size: 34rpx;
   font-weight: 800;
 }
+
 .candy-badge {
   margin-left: 12rpx;
   padding: 2rpx 12rpx;
@@ -548,20 +582,24 @@ export default {
   font-weight: 600;
   vertical-align: middle;
 }
+
 .order-actions {
   display: flex;
   gap: 16rpx;
 }
+
 .mini-btn {
   padding: 12rpx 32rpx;
   border-radius: 32rpx;
   font-size: 24rpx;
   font-weight: 700;
 }
+
 .mini-btn.primary {
   background: linear-gradient(90deg, #52c47d, #27b969);
   color: #fff;
 }
+
 .mini-btn.ghost {
   border: 1rpx solid #d8dcd8;
   color: #3a3f3b;
@@ -574,6 +612,7 @@ export default {
   font-size: 22rpx;
   color: #b0b4b0;
 }
+
 .bottom-space {
   height: 40rpx;
 }

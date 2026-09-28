@@ -221,6 +221,13 @@
         "navigationBarTitleText": "联系客服",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
