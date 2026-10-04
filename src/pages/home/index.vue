@@ -412,8 +412,8 @@ export default {
         uni.showToast({ title: '请先登录', icon: 'none' })
         setTimeout(() => {
           // 项目未配置原生 tabBar（自定义 TabBar），统一用 redirectTo 跳转
-          uni.redirectTo({ url: '/pages/profile/index' })
-        }, 800)
+          uni.navigateTo({ url: '/pages/login/index' })
+        }, 200)
         return
       }
       const item = this.buying

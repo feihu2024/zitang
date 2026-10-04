@@ -310,6 +310,11 @@ export default {
     goLogin() {
       uni.navigateTo({ url: '/pages/login/index' })
     },
+    // 未登录统一处理：提示后跳转登录页（供各入口拦截）
+    requireLogin() {
+      uni.showToast({ title: '请先登录', icon: 'none' })
+      setTimeout(() => this.goLogin(), 200)
+    },
 
     // ---- 手机号绑定 ----
     async onGetPhone(e) {
@@ -403,54 +408,53 @@ export default {
     },
     // 地址管理（from=manage：只维护地址，不带下单选地址语义）
     goAddressList() {
-      if (!isLoggedIn()) {
-        uni.showToast({ title: '请先登录', icon: 'none' })
-        setTimeout(() => this.goLogin(), 600)
-        return
-      }
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/address-list/index?from=manage' })
     },
     goReferrals() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/referrals/index' })
     },
     // 我的订单入口（全部 / 待发货=paid / 待收货=shipped / 已完成=completed）
     goOrders(status) {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       const query = status ? '?status=' + status : ''
       uni.navigateTo({ url: '/pages/orders/index' + query })
     },
     goGroupRecords() {
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/group-records/index' })
     },
     goFlashRecords() {
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/flash-records/index' })
     },
     goLotteryRecords() {
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/lottery-records/index' })
     },
-    // 资产明细入口（余额/积分，未登录提示）
+    // 资产明细入口（余额/积分，未登录跳登录页）
     goBalanceRecords() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/balance-records/index' })
     },
     goPointRecords() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/point-records/index' })
     },
     // 积分互转入口（仅可转给直推下线）
     goPointsTransfer() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/points-transfer/index' })
     },
     // 糖豆明细入口
     goCandyRecords() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/candy-records/index' })
     },
-    // 我的业绩入口（当前级别 + 当日/本月/累计业绩 + 级差收益，未登录提示）
+    // 我的业绩入口（当前级别 + 当日/本月/累计业绩 + 级差收益，未登录跳登录页）
     goMyPerformance() {
-      if (!this.member) return uni.showToast({ title: '请先登录', icon: 'none' })
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/team-incentive/index' })
     },
     formatMoney(v) {
