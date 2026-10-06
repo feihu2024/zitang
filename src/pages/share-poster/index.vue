@@ -26,8 +26,16 @@
             :class="{ current: index === active }"
           >
             <image class="poster-img" :src="poster.imageUrl" mode="aspectFill" />
-            <!-- 按管理端配置的百分比位置叠加小程序码（模拟占位） -->
+            <!-- 按管理端配置的百分比位置叠加小程序码：有后端返回的二维码图用 image，否则用 CSS 占位 -->
+            <image
+              v-if="poster.shareImageUrl"
+              class="poster-qr"
+              :src="poster.shareImageUrl"
+              mode="aspectFit"
+              :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }"
+            />
             <view
+              v-else
               class="poster-qr"
               :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }"
             ></view>
@@ -71,6 +79,13 @@
       <view class="main-btn" @tap="shareToFriend">分享好友</view>
       <!-- #endif -->
     </view>
+
+    <!-- 隐藏 canvas：用于合成底图 + 二维码，供保存和分享使用 -->
+    <canvas
+      id="poster-canvas"
+      type="2d"
+      class="compose-canvas"
+    />
   </view>
 </template>
 
@@ -94,25 +109,38 @@ export default {
       loading: true,
       touchStartX: null,
       inviteCode: '',
-      fromFallback: false
+      fromFallback: false,
+      composedPath: '',    // 当前选中海报的合成图临时路径
+      composing: false     // 是否正在合成
     }
   },
   onShow() {
     this.inviteCode = getMyInviteCode() || ''
     this.loadPosters()
   },
+  watch: {
+    // 切换海报时预合成，保证分享/保存拿到合成图
+    active() {
+      this.preCompose()
+    }
+  },
   onShareAppMessage() {
     const invite = this.inviteCode
     const poster = this.posters[this.active]
     // 分享语：后台配置的优先，留空用默认文案
     const title = (poster && poster.shareTitle) || '我邀请你加入植萃生活，一起拼团省更多'
-    // 分享图：后台配置的分享图优先，未配置回退海报底图；微信仅接受网络图
-    const img = poster ? (poster.shareImageUrl || poster.imageUrl) : ''
+    // 分享图：优先用预合成的底图+二维码合成图
     const result = {
       title,
       path: '/pages/home/index' + (invite ? '?invite=' + invite : '')
     }
-    if (img && img.indexOf('http') === 0) result.imageUrl = img
+    if (this.composedPath) {
+      result.imageUrl = this.composedPath
+    } else {
+      // 兜底：预合成还没好，用底图
+      const img = poster ? poster.imageUrl : ''
+      if (img && img.indexOf('http') === 0) result.imageUrl = img
+    }
     return result
   },
   methods: {
@@ -148,6 +176,8 @@ export default {
         this.fromFallback = true
       } finally {
         this.loading = false
+        // 海报加载完成（或 fallback）后，预合成当前选中的一张
+        this.preCompose()
       }
     },
     // 切换上一张 / 下一张（循环）
@@ -193,31 +223,29 @@ export default {
       this.shareToFriend()
       // #endif
     },
-    // 保存相册：网络图下载保存；base64/本地图预览后长按保存
-    savePoster() {
+    // 保存相册：合成底图+二维码后保存
+    async savePoster() {
       const poster = this.posters[this.active]
       if (!poster) return
-      const url = poster.imageUrl
-      // #ifdef MP-WEIXIN
-      if (url.indexOf('data:') === 0 || url.indexOf('/static/') === 0) {
-        uni.previewImage({ urls: [url] })
-        return
+      uni.showLoading({ title: '正在生成海报...' })
+      try {
+        const composed = await this.composePoster(poster)
+        uni.hideLoading()
+        // #ifdef MP-WEIXIN
+        uni.saveImageToPhotosAlbum({
+          filePath: composed,
+          success: () => uni.showToast({ title: '海报已保存到相册', icon: 'success' }),
+          fail: () => uni.showToast({ title: '保存失败，请检查相册权限', icon: 'none' })
+        })
+        // #endif
+        // #ifdef H5
+        uni.previewImage({ urls: [composed] })
+        // #endif
+      } catch (e) {
+        uni.hideLoading()
+        console.error('保存海报失败:', e)
+        uni.showToast({ title: '生成海报失败', icon: 'none' })
       }
-      uni.downloadFile({
-        url: url,
-        success: (res) => {
-          uni.saveImageToPhotosAlbum({
-            filePath: res.tempFilePath,
-            success: () => uni.showToast({ title: '海报已保存到相册', icon: 'success' }),
-            fail: () => uni.showToast({ title: '保存失败，请检查相册权限', icon: 'none' })
-          })
-        },
-        fail: () => uni.showToast({ title: '图片下载失败', icon: 'none' })
-      })
-      // #endif
-      // #ifdef H5
-      uni.previewImage({ urls: [url] })
-      // #endif
     },
     goBack() {
       const pages = getCurrentPages()
@@ -226,6 +254,127 @@ export default {
       } else {
         uni.redirectTo({ url: '/pages/home/index' })
       }
+    },
+    // ----- 以下为 canvas 合成相关 -----
+    // 预合成：切换海报或初次加载时调用，结果缓存到 this.composedPath
+    async preCompose() {
+      if (this.composing) return
+      const poster = this.posters[this.active]
+      if (!poster || !poster.imageUrl) return
+      this.composing = true
+      try {
+        this.composedPath = await this.composePoster(poster)
+      } catch (e) {
+        console.error('预合成失败:', e)
+        this.composedPath = ''
+      } finally {
+        this.composing = false
+      }
+    },
+    // 通用下载：把网络图下载到本地临时路径；本地/完整 URL 原样返回
+    _downloadImage(url) {
+      return new Promise((resolve, reject) => {
+        if (!url) return resolve('')
+        // 已经是本地路径 / 完整 URL（如 http 或 data:），直接返回
+        if (url.indexOf('/static/') === 0 || url.indexOf('http') === 0 || url.indexOf('data:') === 0) {
+          return resolve(url)
+        }
+        uni.downloadFile({
+          url,
+          success: (res) => resolve(res.tempFilePath),
+          fail: reject
+        })
+      })
+    },
+    // 合成底图 + 二维码到 canvas，返回导出的临时文件路径
+    composePoster(poster) {
+      const CANVAS_W = 750   // 设计稿宽度 rpx → px（canvas 用物理像素）
+      const CANVAS_H = 1137  // 设计稿海报高度，按 poster-card 比例 507:770 ≈ 0.6584, 750/0.6584 ≈ 1139，微调
+      return Promise.resolve().then(async () => {
+        // 1) 下载底图
+        let bgPath = poster.imageUrl
+        if (bgPath.indexOf('http') === 0) {
+          bgPath = await this._downloadImage(bgPath)
+        }
+
+        // 2) 获取 canvas 对象
+        return new Promise((resolve, reject) => {
+          const query = uni.createSelectorQuery().in(this)
+          query.select('#poster-canvas')
+            .fields({ node: true, size: true })
+            .exec((res) => {
+              if (!res || !res[0] || !res[0].node) {
+                return reject(new Error('canvas 节点未找到'))
+              }
+              const canvas = res[0].node
+              const ctx = canvas.getContext('2d')
+              const dpr = uni.getSystemInfoSync().pixelRatio || 2
+              canvas.width = CANVAS_W * dpr
+              canvas.height = CANVAS_H * dpr
+              ctx.scale(dpr, dpr)
+
+              // 3) 画底图
+              const bgImg = canvas.createImage()
+              bgImg.onload = () => {
+                ctx.drawImage(bgImg, 0, 0, CANVAS_W, CANVAS_H)
+
+                // 4) 画二维码（如果有）
+                if (poster.shareImageUrl) {
+                  let qrPath = poster.shareImageUrl
+                  const drawQR = () => {
+                    const qrImg = canvas.createImage()
+                    qrImg.onload = () => {
+                      // 百分比定位 + transform(-50%,-50%) 的中心点转换
+                      const qrW = poster.qrW / 100 * CANVAS_W
+                      const qrH = poster.qrH / 100 * CANVAS_H
+                      const qrX = poster.qrX / 100 * CANVAS_W - qrW / 2
+                      const qrY = poster.qrY / 100 * CANVAS_H - qrH / 2
+                      ctx.drawImage(qrImg, qrX, qrY, qrW, qrH)
+                      // 导出
+                      this._exportCanvas(canvas, resolve, reject)
+                    }
+                    qrImg.onerror = () => {
+                      console.warn('二维码图片加载失败，导出仅底图')
+                      this._exportCanvas(canvas, resolve, reject)
+                    }
+                    qrImg.src = qrPath
+                  }
+                  if (qrPath.indexOf('http') === 0) {
+                    this._downloadImage(qrPath).then(drawQR).catch(() => {
+                      console.warn('二维码下载失败，导出仅底图')
+                      this._exportCanvas(canvas, resolve, reject)
+                    })
+                  } else {
+                    drawQR()
+                  }
+                } else {
+                  this._exportCanvas(canvas, resolve, reject)
+                }
+              }
+              bgImg.onerror = () => reject(new Error('底图加载失败: ' + bgPath))
+              bgImg.src = bgPath
+            })
+        })
+      })
+    },
+    // 把 canvas 导出为临时图片文件
+    _exportCanvas(canvas, resolve, reject) {
+      // #ifdef H5
+      try {
+        const dataUrl = canvas.toDataURL('image/png')
+        return resolve(dataUrl)
+      } catch (e) {
+        return reject(e)
+      }
+      // #endif
+      // #ifndef H5
+      uni.canvasToTempFilePath({
+        canvas,
+        fileType: 'png',
+        success: (res) => resolve(res.tempFilePath),
+        fail: reject
+      })
+      // #endif
     }
   }
 }
@@ -368,7 +517,7 @@ export default {
   transform: translate(-50%, -50%);
   border: 4rpx solid #fff;
   border-radius: 8rpx;
-  background: repeating-conic-gradient(#183d28 0 25%, #fff 0 50%) 0 0/8rpx 8rpx;
+  /* background: repeating-conic-gradient(#183d28 0 25%, #fff 0 50%) 0 0/8rpx 8rpx; */
   box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.28);
 }
 .stage-arrow {
@@ -476,5 +625,13 @@ export default {
 }
 .main-btn::after {
   border: 0;
+}
+/* 隐藏合成 canvas：不能 display:none（微信小程序 canvas 无法渲染） */
+.compose-canvas {
+  position: fixed;
+  left: -9999rpx;
+  top: -9999rpx;
+  width: 750px;
+  height: 1137px;
 }
 </style>
