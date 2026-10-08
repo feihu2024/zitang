@@ -23,7 +23,7 @@
       <view class="quick-grid card">
         <view class="quick-item" @tap="goSharePoster">
           <image class="quick-icon" src="/static/quick-gift.png" mode="aspectFit" />
-          <text class="quick-title">邀请有礼</text>
+          <text class="quick-title">爆款活动</text>
           <text class="quick-desc">邀好友 得奖励</text>
         </view>
         <view class="quick-item" @tap="showComing">
@@ -429,7 +429,7 @@ export default {
       uni.showToast({ title: '功能即将开放', icon: 'none' })
     },
     goSharePoster() {
-      uni.navigateTo({ url: '/pages/share-poster/index' })
+      uni.switchTab({ url: '/pages/lottery/index' })
     },
     // 进入「推广」tab 页（项目使用自定义 TabBar，tab 间跳转统一用 redirectTo）
     goPromo() {

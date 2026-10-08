@@ -396,6 +396,7 @@ export default {
       uni.showToast({ title: title || '功能即将开放', icon: 'none' })
     },
     goSharePoster() {
+      if (!this.member) return this.requireLogin()
       uni.navigateTo({ url: '/pages/share-poster/index' })
     },
     // 隐私协议（无需登录即可查看）

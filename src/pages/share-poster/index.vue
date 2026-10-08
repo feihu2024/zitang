@@ -19,26 +19,15 @@
       <!-- 沉浸式大图预览 -->
       <template v-else-if="posters.length">
         <view class="stage" @touchstart="onTouchStart" @touchend="onTouchEnd">
-          <view
-            v-for="(poster, index) in posters"
-            :key="poster.key"
-            class="poster-card"
-            :class="{ current: index === active }"
-          >
+          <view v-for="(poster, index) in posters" :key="poster.key" class="poster-card"
+            :class="{ current: index === active }">
             <image class="poster-img" :src="poster.imageUrl" mode="aspectFill" />
-            <!-- 按管理端配置的百分比位置叠加小程序码：有后端返回的二维码图用 image，否则用 CSS 占位 -->
-            <image
-              v-if="poster.shareImageUrl"
-              class="poster-qr"
-              :src="poster.shareImageUrl"
-              mode="aspectFit"
-              :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }"
-            />
-            <view
-              v-else
-              class="poster-qr"
-              :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }"
-            ></view>
+            <!-- 按管理端配置的百分比位置叠加二维码（接口 erwpic）：有图用 image，否则用 CSS 占位 -->
+            <image v-if="poster.shareImageUrl" class="poster-qr" :src="poster.shareImageUrl" mode="aspectFit"
+              :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }" />
+            <view v-else class="poster-qr"
+              :style="{ left: poster.qrX + '%', top: poster.qrY + '%', width: poster.qrW + '%', height: poster.qrH + '%' }">
+            </view>
           </view>
           <view v-if="posters.length > 1" class="stage-arrow prev" @tap="move(-1)">‹</view>
           <view v-if="posters.length > 1" class="stage-arrow next" @tap="move(1)">›</view>
@@ -81,11 +70,7 @@
     </view>
 
     <!-- 隐藏 canvas：用于合成底图 + 二维码，供保存和分享使用 -->
-    <canvas
-      id="poster-canvas"
-      type="2d"
-      class="compose-canvas"
-    />
+    <canvas id="poster-canvas" type="2d" class="compose-canvas" />
   </view>
 </template>
 
@@ -150,6 +135,8 @@ export default {
       try {
         const resp = await get('/api/wxapp/posters')
         const items = resp.items || []
+        // 二维码图：顶层 resp.erwpic 为全部海报共用；单个 item 也可自带 erwpic 覆盖
+        const globalQr = resolveAssetUrl(resp.erwpic || '')
         if (items.length) {
           this.posters = items.map((p) => ({
             key: 'p-' + p.id,
@@ -162,7 +149,10 @@ export default {
             qrW: p.qrW || 20,
             qrH: p.qrH || 12,
             shareTitle: p.shareTitle || '',
-            shareImageUrl: p.shareImageUrl ? resolveAssetUrl(p.shareImageUrl) : ''
+            // item 级 erwpic 优先 → 顶层 erwpic → 旧字段 shareImageUrl 兜底
+            shareImageUrl: p.erwpic
+              ? resolveAssetUrl(p.erwpic)
+              : (globalQr || (p.shareImageUrl ? resolveAssetUrl(p.shareImageUrl) : ''))
           }))
           this.fromFallback = false
         } else {
@@ -386,6 +376,7 @@ export default {
   background: linear-gradient(180deg, #eef6f0 0%, #f9faf9 30%, #f9faf9 100%);
   overflow-x: hidden;
 }
+
 .safe-top {
   height: env(safe-area-inset-top);
 }
@@ -399,6 +390,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .nav-back {
   position: absolute;
   left: 24rpx;
@@ -412,12 +404,14 @@ export default {
   border-radius: 50%;
   box-shadow: 0 4rpx 14rpx rgba(31, 86, 50, 0.12);
 }
+
 .nav-title {
   font-size: 34rpx;
   font-weight: 700;
   color: #1d2b21;
   letter-spacing: 2rpx;
 }
+
 .nav-count {
   position: absolute;
   right: 26rpx;
@@ -448,6 +442,7 @@ export default {
   justify-content: center;
   gap: 14rpx;
 }
+
 .loading-ring {
   width: 64rpx;
   height: 64rpx;
@@ -456,11 +451,13 @@ export default {
   border-top-color: #2cac61;
   animation: poster-spin 0.9s linear infinite;
 }
+
 @keyframes poster-spin {
   to {
     transform: rotate(360deg);
   }
 }
+
 .state-icon {
   width: 128rpx;
   height: 128rpx;
@@ -471,10 +468,12 @@ export default {
   background: #e4f1e8;
   border-radius: 50%;
 }
+
 .state-text {
   font-size: 28rpx;
   color: #67756c;
 }
+
 .state-sub {
   font-size: 22rpx;
   color: #9aa79d;
@@ -487,6 +486,7 @@ export default {
   margin-top: 8rpx;
   position: relative;
 }
+
 .poster-card {
   position: absolute;
   left: 50%;
@@ -502,15 +502,18 @@ export default {
   transition: transform 0.42s cubic-bezier(0.22, 0.78, 0.22, 1), opacity 0.42s ease;
   pointer-events: none;
 }
+
 .poster-card.current {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
   pointer-events: auto;
 }
+
 .poster-img {
   width: 100%;
   height: 100%;
 }
+
 /* 小程序码占位（按管理端配置的百分比定位） */
 .poster-qr {
   position: absolute;
@@ -520,6 +523,7 @@ export default {
   /* background: repeating-conic-gradient(#183d28 0 25%, #fff 0 50%) 0 0/8rpx 8rpx; */
   box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.28);
 }
+
 .stage-arrow {
   position: absolute;
   z-index: 9;
@@ -535,9 +539,11 @@ export default {
   font-size: 46rpx;
   box-shadow: 0 6rpx 18rpx rgba(24, 73, 40, 0.16);
 }
+
 .stage-arrow.prev {
   left: 20rpx;
 }
+
 .stage-arrow.next {
   right: 20rpx;
 }
@@ -552,17 +558,20 @@ export default {
   align-items: center;
   text-align: center;
 }
+
 .meta-name {
   font-size: 28rpx;
   font-weight: 600;
   color: #1d2b21;
   white-space: pre-line;
 }
+
 .meta-slogan {
   margin-top: 10rpx;
   font-size: 22rpx;
   color: #7b867e;
 }
+
 .meta-note {
   margin-top: 12rpx;
   font-size: 20rpx;
@@ -583,11 +592,13 @@ export default {
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 -6rpx 24rpx rgba(29, 67, 42, 0.08);
 }
+
 .sub-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
 }
+
 .sub-btn {
   height: 84rpx;
   border-radius: 24rpx;
@@ -598,14 +609,17 @@ export default {
   background: #f2f5f3;
   color: #46534b;
 }
+
 .sub-icon {
   font-size: 30rpx;
   line-height: 1;
 }
+
 .sub-label {
   font-size: 24rpx;
   font-weight: 500;
 }
+
 .main-btn {
   width: 100%;
   margin-top: 16rpx;
@@ -623,9 +637,11 @@ export default {
   margin-left: 0;
   margin-right: 0;
 }
+
 .main-btn::after {
   border: 0;
 }
+
 /* 隐藏合成 canvas：不能 display:none（微信小程序 canvas 无法渲染） */
 .compose-canvas {
   position: fixed;
