@@ -37,19 +37,53 @@
       <!-- 底部 -->
       <view class="footer">子唐优美丽 · 让创造更简单</view>
     </view>
+
+    <!-- ===== 登录成功：完善头像和昵称（保存后才进入首页） ===== -->
+    <view v-if="profilePop.show" class="pop-mask">
+      <view class="pop-card">
+        <view class="pop-title">完善个人资料</view>
+        <view class="pop-tip">请设置头像和昵称，方便好友认识你</view>
+        <!-- #ifdef MP-WEIXIN -->
+        <view class="edit-row">
+          <text class="edit-label">头像</text>
+          <button class="avatar-pick-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar">
+            <image v-if="profilePop.avatarUrl" class="pick-avatar" :src="profilePop.avatarUrl" mode="aspectFill" />
+            <text v-else>点击选择</text>
+          </button>
+        </view>
+        <!-- #endif -->
+        <view class="edit-row">
+          <text class="edit-label">昵称</text>
+          <input class="form-input edit-input" :type="isMP ? 'nickname' : 'text'" v-model="profilePop.nickname"
+            placeholder="微信授权昵称或自定义" maxlength="20" />
+        </view>
+        <view class="pop-save" :class="{ disabled: saving }" @tap="saveProfile">
+          {{ saving ? '保存中...' : '保存并进入' }}
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
-import { wxLogin, h5Login } from '@/utils/auth.js'
+import { wxLogin, h5Login, updateProfile } from '@/utils/auth.js'
 
 export default {
   data() {
     return {
       agreed: false,
       shaking: false,
-      loading: false
+      loading: false,
+      isMP: false,
+      saving: false,
+      // 登录成功后的资料完善弹窗
+      profilePop: { show: false, avatarUrl: '', nickname: '' }
     }
+  },
+  created() {
+    // #ifdef MP-WEIXIN
+    this.isMP = true
+    // #endif
   },
   methods: {
     async onLogin() {
@@ -67,29 +101,53 @@ export default {
       if (this.loading) return
       this.loading = true
       try {
-        let res
         // #ifdef MP-WEIXIN
         // 小程序端：wx.login code 换登录态（后端 mock 模式下用 device_id 建模拟账号）
-        res = await wxLogin()
+        await wxLogin()
         // #endif
         // #ifdef H5
         // H5 端：用 device_id 建立模拟账号（邀请码已在 auth 模块自动携带）
-        res = await h5Login({})
+        await h5Login({})
         // #endif
-        uni.showToast({ title: res.isNew ? '注册成功' : '登录成功', icon: 'success' })
-        setTimeout(() => {
-          const pages = getCurrentPages()
-          if (pages.length > 1) {
-            uni.navigateBack({ delta: 1 })
-          } else {
-            // 直接打开登录页无来源页时，落到首页
-            uni.redirectTo({ url: '/pages/home/index' })
-          }
-        }, 800)
+        // 登录成功先不跳转：弹出资料完善弹窗，保存后再进首页
+        this.profilePop.show = true
       } catch (e) {
         uni.showToast({ title: e.message || '登录失败', icon: 'none' })
       } finally {
         this.loading = false
+      }
+    },
+    // 微信 chooseAvatar 回调
+    onChooseAvatar(e) {
+      this.profilePop.avatarUrl = e.detail.avatarUrl
+    },
+    // 保存头像和昵称，成功后跳转首页
+    async saveProfile() {
+      if (this.saving) return
+      const nickname = (this.profilePop.nickname || '').trim()
+      if (!nickname) {
+        return uni.showToast({ title: '请输入昵称', icon: 'none' })
+      }
+      // #ifdef MP-WEIXIN
+      if (!this.profilePop.avatarUrl) {
+        return uni.showToast({ title: '请选择头像', icon: 'none' })
+      }
+      // #endif
+      this.saving = true
+      try {
+        const data = { nickname }
+        // 有头像才上报，避免空字符串被当成清空头像
+        if (this.profilePop.avatarUrl) data.avatar_url = this.profilePop.avatarUrl
+        await updateProfile(data)
+        uni.showToast({ title: '已保存', icon: 'success' })
+        // 清空页面栈进入首页，避免返回到登录/个人中心页
+        setTimeout(() => {
+          uni.reLaunch({ url: '/pages/home/index' })
+        }, 600)
+      } catch (e) {
+        uni.showToast({ title: e.message || '保存失败', icon: 'none' })
+      } finally {
+        this.saving = false
       }
     },
     goPrivacy() {
@@ -322,5 +380,111 @@ export default {
   width: 56rpx;
   height: 1rpx;
   background: #d5ddea;
+}
+
+/* ===== 资料完善弹窗（遮罩居中限宽，适配桌面 H5 手机壳预览） ===== */
+.pop-mask {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 750rpx;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pop-card {
+  width: 620rpx;
+  background: #fff;
+  border-radius: 28rpx;
+  padding: 40rpx 36rpx 36rpx;
+}
+
+.pop-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pop-tip {
+  margin-top: 10rpx;
+  text-align: center;
+  font-size: 23rpx;
+  color: #8a9bb9;
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  margin-top: 28rpx;
+  gap: 20rpx;
+}
+
+.edit-label {
+  width: 90rpx;
+  font-size: 26rpx;
+  color: #555;
+  flex: none;
+}
+
+/* 微信 chooseAvatar 按钮 */
+.avatar-pick-btn {
+  width: 110rpx;
+  height: 110rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f2f4f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  color: #888;
+  line-height: normal;
+}
+
+.avatar-pick-btn::after {
+  border: none;
+}
+
+.pick-avatar {
+  width: 110rpx;
+  height: 110rpx;
+}
+
+/* 昵称输入 */
+.edit-input {
+  flex: 1;
+  height: 82rpx;
+  padding: 0 26rpx;
+  border-radius: 20rpx;
+  background: #fff;
+  border: 1rpx solid #dbe7dc;
+  font-size: 26rpx;
+}
+
+/* 保存按钮（与登录按钮同色系） */
+.pop-save {
+  margin-top: 40rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 44rpx;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 700;
+  background: linear-gradient(105deg, #45dc7e 0%, #12cf8c 48%, #00bd78 100%);
+  box-shadow: 0 14rpx 28rpx rgba(0, 199, 125, .2);
+}
+
+.pop-save.disabled {
+  opacity: .6;
 }
 </style>
