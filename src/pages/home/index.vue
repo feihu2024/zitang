@@ -23,18 +23,20 @@
       <view class="quick-grid card">
         <view class="quick-item" @tap="goSharePoster">
           <image class="quick-icon" src="/static/quick-gift.png" mode="aspectFit" />
-          <text class="quick-title">爆款活动</text>
+          <text class="quick-title">邀请有礼</text>
           <text class="quick-desc">邀好友 得奖励</text>
         </view>
         <view class="quick-item" @tap="showComing">
           <image class="quick-icon" src="/static/quick-play.png" mode="aspectFit" />
-          <text class="quick-title">新手教程</text>
-          <text class="quick-desc">快速上手指南</text>
+          <text class="quick-title">联系客服</text>
+          <text class="quick-desc">快速链接服务</text>
         </view>
-        <view class="quick-item" @tap="showComing">
+        <view class="quick-item" @tap="goActivity">
           <image class="quick-icon" src="/static/quick-bottle.png" mode="aspectFit" />
-          <text class="quick-title">产品介绍</text>
-          <text class="quick-desc">了解产品卖点</text>
+          <!-- <text class="quick-title">产品介绍</text>
+          <text class="quick-desc">了解产品卖点</text> -->
+          <text class="quick-title">爆款活动</text>
+          <text class="quick-desc">惊喜爆款活动</text>
         </view>
         <view class="quick-item" @tap="goPromo">
           <image class="quick-icon" src="/static/quick-image.png" mode="aspectFit" />
@@ -426,10 +428,22 @@ export default {
       })
     },
     showComing() {
-      uni.showToast({ title: '功能即将开放', icon: 'none' })
+      uni.navigateTo({ url: '/pages/customer-service/index' })
     },
     goSharePoster() {
-      uni.switchTab({ url: '/pages/lottery/index' })
+      if (!isLoggedIn()) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => {
+          // 项目未配置原生 tabBar（自定义 TabBar），统一用 redirectTo 跳转
+          uni.navigateTo({ url: '/pages/login/index' })
+        }, 200)
+        return
+      } else {
+        uni.navigateTo({ url: '/pages/share-poster/index' })
+      }
+    },
+    goActivity() {
+      uni.redirectTo({ url: '/pages/lottery/index' })
     },
     // 进入「推广」tab 页（项目使用自定义 TabBar，tab 间跳转统一用 redirectTo）
     goPromo() {

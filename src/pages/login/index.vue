@@ -1,6 +1,9 @@
 <template>
   <view class="login-page">
     <view class="login-shell">
+      <!-- 返回 / 拒绝登录：可直接退出，不强制登录 -->
+      <view class="login-back" @tap="onBack">‹</view>
+
       <!-- 顶部波浪装饰 -->
       <image class="hero-art" src="/static/login-hero.svg" mode="aspectFit" />
 
@@ -34,15 +37,18 @@
         </text>
       </view>
 
+      <!-- 拒绝登录入口：不登录也能返回浏览 -->
+      <view class="skip-login" @tap="onBack">暂不登录，先逛逛 ›</view>
+
       <!-- 底部 -->
       <view class="footer">子唐优美丽 · 让创造更简单</view>
     </view>
 
-    <!-- ===== 登录成功：完善头像和昵称（保存后才进入首页） ===== -->
-    <view v-if="profilePop.show" class="pop-mask">
-      <view class="pop-card">
+    <!-- ===== 登录成功：完善头像和昵称（可跳过，不强制） ===== -->
+    <view v-if="profilePop.show" class="pop-mask" @tap="skipProfile">
+      <view class="pop-card" @tap.stop>
         <view class="pop-title">完善个人资料</view>
-        <view class="pop-tip">请设置头像和昵称，方便好友认识你</view>
+        <view class="pop-tip">设置头像和昵称，方便好友认识你（可稍后在个人中心编辑）</view>
         <!-- #ifdef MP-WEIXIN -->
         <view class="edit-row">
           <text class="edit-label">头像</text>
@@ -60,6 +66,8 @@
         <view class="pop-save" :class="{ disabled: saving }" @tap="saveProfile">
           {{ saving ? '保存中...' : '保存并进入' }}
         </view>
+        <!-- 拒绝/跳过完善资料 -->
+        <view class="pop-skip" @tap="skipProfile">暂不完善，先逛逛 ›</view>
       </view>
     </view>
   </view>
@@ -109,13 +117,33 @@ export default {
         // H5 端：用 device_id 建立模拟账号（邀请码已在 auth 模块自动携带）
         await h5Login({})
         // #endif
-        // 登录成功先不跳转：弹出资料完善弹窗，保存后再进首页
+        // 已保存过资料或此前已跳过：不再弹窗，直接退出登录页
+        if (uni.getStorageSync('profile_completed') || uni.getStorageSync('profile_skipped')) {
+          return this.onBack()
+        }
+        // 否则弹出资料完善弹窗（可跳过，不强制）
         this.profilePop.show = true
       } catch (e) {
         uni.showToast({ title: e.message || '登录失败', icon: 'none' })
       } finally {
         this.loading = false
       }
+    },
+    // 返回 / 拒绝登录：有来源页返回，无来源页回首页（不强制登录）
+    onBack() {
+      const pages = getCurrentPages()
+      if (pages.length > 1) {
+        uni.navigateBack({ delta: 1 })
+      } else {
+        uni.reLaunch({ url: '/pages/home/index' })
+      }
+    },
+    // 跳过完善资料：记录一次，避免后续反复弹窗
+    skipProfile() {
+      if (this.saving) return
+      uni.setStorageSync('profile_skipped', 1)
+      this.profilePop.show = false
+      this.onBack()
     },
     // 微信 chooseAvatar 回调
     onChooseAvatar(e) {
@@ -139,6 +167,8 @@ export default {
         // 有头像才上报，避免空字符串被当成清空头像
         if (this.profilePop.avatarUrl) data.avatar_url = this.profilePop.avatarUrl
         await updateProfile(data)
+        // 记录已完善，后续登录不再弹窗
+        uni.setStorageSync('profile_completed', 1)
         uni.showToast({ title: '已保存', icon: 'success' })
         // 清空页面栈进入首页，避免返回到登录/个人中心页
         setTimeout(() => {
@@ -382,6 +412,31 @@ export default {
   background: #d5ddea;
 }
 
+/* 返回按钮（左上角，显著可点） */
+.login-back {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 20rpx);
+  left: 24rpx;
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 60rpx;
+  text-align: center;
+  font-size: 40rpx;
+  color: #2c3a31;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  box-shadow: 0 4rpx 14rpx rgba(31, 86, 50, 0.12);
+  z-index: 5;
+}
+
+/* 暂不登录入口 */
+.skip-login {
+  margin-top: 30rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #8a9bb9;
+}
+
 /* ===== 资料完善弹窗（遮罩居中限宽，适配桌面 H5 手机壳预览） ===== */
 .pop-mask {
   position: fixed;
@@ -486,5 +541,13 @@ export default {
 
 .pop-save.disabled {
   opacity: .6;
+}
+
+/* 跳过完善资料入口 */
+.pop-skip {
+  margin-top: 24rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #8a9bb9;
 }
 </style>

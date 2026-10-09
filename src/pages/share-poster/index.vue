@@ -119,13 +119,9 @@ export default {
       title,
       path: '/pages/home/index' + (invite ? '?invite=' + invite : '')
     }
-    if (this.composedPath) {
-      result.imageUrl = this.composedPath
-    } else {
-      // 兜底：预合成还没好，用底图
-      const img = poster ? poster.imageUrl : ''
-      if (img && img.indexOf('http') === 0) result.imageUrl = img
-    }
+
+    const img = poster ? poster.assetImageUrl : ''
+    if (img && img.indexOf('http') === 0) result.imageUrl = img
     return result
   },
   methods: {
@@ -149,6 +145,7 @@ export default {
             qrW: p.qrW || 20,
             qrH: p.qrH || 12,
             shareTitle: p.shareTitle || '',
+            assetImageUrl: resolveAssetUrl(p.shareImageUrl) || '',
             // item 级 erwpic 优先 → 顶层 erwpic → 旧字段 shareImageUrl 兜底
             shareImageUrl: p.erwpic
               ? resolveAssetUrl(p.erwpic)
