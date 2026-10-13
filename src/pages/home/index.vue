@@ -656,11 +656,13 @@ export default {
 .product-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 18rpx;
+  justify-content: space-between;
 }
 
 .product-card {
-  width: calc(50% - 9rpx);
+  width: 48.6%;
+  min-width: 0;
+  margin-bottom: 18rpx;
   overflow: hidden;
 }
 
@@ -723,6 +725,8 @@ export default {
 }
 
 .price-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: baseline;
 }
@@ -736,9 +740,13 @@ export default {
   color: #ff3b42;
   font-size: 34rpx;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .buy-btn {
+  flex: none;
   padding: 10rpx 28rpx;
   border-radius: 30rpx;
   background: linear-gradient(90deg, #52c47d, #27b969);
